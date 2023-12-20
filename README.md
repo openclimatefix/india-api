@@ -12,7 +12,7 @@ Install the dependencies with
 $ pip install -e .[dev]
 ```
 
-The service is then runnable via the command `run-api`.
+The service is then runnable via the command `fake-api`.
 You should see the following output:
 
 ```shell
