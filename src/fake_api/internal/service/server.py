@@ -33,11 +33,16 @@ def get_historic_timeseries_route(source: str, region: str) -> dict:
     elif source == "solar":
         yields = db.get_predicted_solar_yields_for_location(location=region)
     else:
-        raise ValueError(f"Unknown source {source}")
+        return {
+            "error": f"Unknown source {source}",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
     return {
         "yields": [
             y.__dict__ for y in yields if y.TimeUnix < dt.datetime.now(tz=dt.UTC).timestamp()
         ],
+        "status": status.HTTP_200_OK,
+        "error": "",
     }
 
 
@@ -50,9 +55,14 @@ def get_forecast_timeseries_route(source: str, region: str) -> dict:
     elif source == "solar":
         yields = db.get_predicted_solar_yields_for_location(location=region)
     else:
-        raise ValueError(f"Unknown source {source}")
+        return {
+            "error": f"Unknown source {source}",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
     return {
         "yields": [
             y.__dict__ for y in yields if y.TimeUnix >= dt.datetime.now(tz=dt.UTC).timestamp()
         ],
+        "status": status.HTTP_200_OK,
+        "error": "",
     }

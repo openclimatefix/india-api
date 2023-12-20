@@ -14,8 +14,7 @@ def run() -> None:
         reload=False,
         log_level="debug",
         workers=1,
-        limit_concurrency=1,
-        limit_max_requests=1,
+        limit_concurrency=2,
     )
 
 
