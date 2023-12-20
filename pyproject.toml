@@ -39,6 +39,9 @@ dev = [
 [project.urls]
 repository = "https://github.com/openclimatefix/fake-api"
 
+[project.scripts]
+run-api = "fake_api.cmd.main:run"
+
 [tool.setuptools]
 include-package-data = false
 

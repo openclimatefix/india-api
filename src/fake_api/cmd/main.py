@@ -1,15 +1,23 @@
-from fastapi import FastAPI
+"""The main entrypoint to the application."""
 
-app = FastAPI()
+import uvicorn
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+from fake_api.internal.service import server
 
-@app.get("/historic_timeseries/{region}")
-def get_historic_timeseries(region: str):
-    return {"region": region}
 
-@app.get("/forecast_timeseries/{region}")
-def get_forecast_timeseries(region: str):
-    return {"region": region}
+def run() -> None:
+    """Run the API using a uvicorn server."""
+    uvicorn.run(
+        server,
+        host="0.0.0.0",
+        port=8000,
+        reload=False,
+        log_level="debug",
+        workers=1,
+        limit_concurrency=1,
+        limit_max_requests=1,
+    )
+
+
+if __name__ == "__main__":
+    run()

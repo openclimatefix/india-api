@@ -10,8 +10,8 @@ class DBPredictedYield:
 
     YieldKW: int
     TimeUnix: int
-    ErrLow: int
-    ErrHigh: int
+    UncertaintyLow: int
+    UncertaintyHigh: int
 
 
 @dc.dataclass

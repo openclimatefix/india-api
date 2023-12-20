@@ -15,8 +15,8 @@ class FakeYield:
     """Defines a fake yield data point."""
 
     YieldKW: float
-    ErrLow: float
-    ErrHigh: float
+    UncertaintyLow: float
+    UncertaintyHigh: float
 
 
 def getWindow() -> tuple[dt.datetime, dt.datetime]:
@@ -83,34 +83,34 @@ def BasicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
     # Create the output value from the base function, noise, and scale factor
     output = basefunc * noise * scaleFactor
 
-    # Add some random error
-    errLow: float = 0.0
-    errHigh: float = 0.0
+    # Add some random Uncertaintyor
+    UncertaintyLow: float = 0.0
+    UncertaintyHigh: float = 0.0
     if output > 0:
-        errLow = output - (random.random() * output / 10)
-        errHigh = output + (random.random() * output / 10)
+        UncertaintyLow = output - (random.random() * output / 10)
+        UncertaintyHigh = output + (random.random() * output / 10)
 
     return FakeYield(
         YieldKW=output,
-        ErrLow=errLow,
-        ErrHigh=errHigh,
+        UncertaintyLow=UncertaintyLow,
+        UncertaintyHigh=UncertaintyHigh,
     )
 
 
 def BasicWindYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
     """Gets a fake wind yield for the input time."""
-    output = math.min(scaleFactor, scaleFactor * 10 * random.random())
+    output = min(scaleFactor, scaleFactor * 10 * random.random())
 
-    errLow: float = 0.0
-    errHigh: float = 0.0
+    UncertaintyLow: float = 0.0
+    UncertaintyHigh: float = 0.0
     if output > 0:
-        errLow = output - (random.random() * output / 10)
-        errHigh = output + (random.random() * output / 10)
+        UncertaintyLow = output - (random.random() * output / 10)
+        UncertaintyHigh = output + (random.random() * output / 10)
 
     return FakeYield(
         YieldKW=output,
-        ErrLow=errLow,
-        ErrHigh=errHigh,
+        UncertaintyLow=UncertaintyLow,
+        UncertaintyHigh=UncertaintyHigh,
     )
 
 
@@ -138,8 +138,8 @@ class DummyDatabase(internal.DatabaseInterface):
                 internal.DBPredictedYield(
                     TimeUnix=int(time.timestamp()),
                     YieldKW=int(_yield.YieldKW),
-                    ErrLow=int(_yield.ErrLow),
-                    ErrHigh=int(_yield.ErrHigh),
+                    UncertaintyLow=int(_yield.UncertaintyLow),
+                    UncertaintyHigh=int(_yield.UncertaintyHigh),
                 ),
             )
 
@@ -166,8 +166,8 @@ class DummyDatabase(internal.DatabaseInterface):
                 internal.DBPredictedYield(
                     TimeUnix=int(time.timestamp()),
                     YieldKW=int(_yield.YieldKW),
-                    ErrLow=int(_yield.ErrLow),
-                    ErrHigh=int(_yield.ErrHigh),
+                    UncertaintyLow=int(_yield.UncertaintyLow),
+                    UncertaintyHigh=int(_yield.UncertaintyHigh),
                 ),
             )
 
@@ -183,6 +183,25 @@ class DummyDatabase(internal.DatabaseInterface):
         for i in range(numSteps):
             time = start + i * step
             _yield = BasicSolarYieldFunc(int(time.timestamp()))
+            yields.append(
+                internal.DBActualYield(
+                    TimeUnix=int(time.timestamp()),
+                    YieldKW=int(_yield.YieldKW),
+                ),
+            )
+
+        return yields
+
+    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.DBActualYield]:
+        """Gets the actual wind yields for a location."""
+        # Get the window
+        start, end = getWindow()
+        numSteps = int((end - start) / step)
+        yields: list[internal.DBActualYield] = []
+
+        for i in range(numSteps):
+            time = start + i * step
+            _yield = BasicWindYieldFunc(int(time.timestamp()))
             yields.append(
                 internal.DBActualYield(
                     TimeUnix=int(time.timestamp()),

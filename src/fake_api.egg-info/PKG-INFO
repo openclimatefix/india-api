@@ -20,3 +20,16 @@ Requires-Dist: python-lsp-server>=1.9.0; extra == "lint"
 Requires-Dist: ruff>=0.1.7; extra == "lint"
 Provides-Extra: dev
 Requires-Dist: fake-api[lint,test]; extra == "dev"
+
+# Fake API
+
+Defines a fake API to help with building frontends.
+
+## Running the service
+
+Clone the repository,
+and create a new virtual environment with your favorite environment manager.
+Install the dependencies with
+```
+
+```
