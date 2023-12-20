@@ -1,0 +1,22 @@
+Metadata-Version: 2.1
+Name: fake-api
+Version: 0.0.1
+Summary: Fake API for wind and solar data
+Author-email: Sol Cotton <sol@openclimatefix.org>
+License: MIT License
+Project-URL: repository, https://github.com/openclimatefix/fake-api
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.11.0
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.105.0
+Requires-Dist: numpy>=1.23.2
+Requires-Dist: structlog>=23.2.0
+Requires-Dist: uvicorn>=0.24.0
+Provides-Extra: test
+Requires-Dist: unittest-xml-reporting==3.2.0; extra == "test"
+Provides-Extra: lint
+Requires-Dist: mypy>=1.7.1; extra == "lint"
+Requires-Dist: python-lsp-server>=1.9.0; extra == "lint"
+Requires-Dist: ruff>=0.1.7; extra == "lint"
+Provides-Extra: dev
+Requires-Dist: fake-api[lint,test]; extra == "dev"
