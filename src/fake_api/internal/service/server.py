@@ -2,7 +2,7 @@
 
 import datetime as dt
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 
 from fake_api.internal import DatabaseInterface, DBPredictedYield, inputs
 
@@ -16,6 +16,12 @@ db: DatabaseInterface = inputs.DummyDatabase()
 def read_root() -> dict:
     """Root endpoint for the API."""
     return {"Hello": "World"}
+
+
+@server.get("/health")
+def get_health_route() -> dict:
+    """Health endpoint for the API."""
+    return {"status": status.HTTP_200_OK}
 
 
 @server.get("/historic_timeseries/{source}/{region}")
