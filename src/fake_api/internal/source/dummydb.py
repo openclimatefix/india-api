@@ -19,15 +19,21 @@ class FakeYield:
     ErrHigh: float
 
 
-def getWindow() -> (dt.datetime, dt.datetime):
+def getWindow() -> tuple[dt.datetime, dt.datetime]:
     """Returns the start and end of the window for timeseries data."""
     # Window start is the beginning of the day two days ago
     start = (dt.datetime.now(tz=dt.UTC) - dt.timedelta(days=2)).replace(
-        hour=0, minute=0, second=0, microsecond=0,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
     )
     # Window end is the beginning of the day two days ahead
     end = (dt.datetime.now(tz=dt.UTC) + dt.timedelta(days=2)).replace(
-        hour=0, minute=0, second=0, microsecond=0,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
     )
     return (start, end)
 
@@ -45,7 +51,7 @@ def BasicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
             A scale factor of 10000 will result in a peak yield of 10 kW.
     """
     # Create a datetime object from the unix time
-    time = dt.datetime.fromtimestamp(timeUnix)
+    time = dt.datetime.fromtimestamp(timeUnix, tz=dt.UTC)
     # The functions x values are hours, so convert the time to hours
     hour = time.day * 24 + time.hour + time.minute / 60 + time.second / 3600
 
@@ -91,11 +97,29 @@ def BasicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
     )
 
 
+def BasicWindYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
+    """Gets a fake wind yield for the input time."""
+    output = math.min(scaleFactor, scaleFactor * 10 * random.random())
+
+    errLow: float = 0.0
+    errHigh: float = 0.0
+    if output > 0:
+        errLow = output - (random.random() * output / 10)
+        errHigh = output + (random.random() * output / 10)
+
+    return FakeYield(
+        YieldKW=output,
+        ErrLow=errLow,
+        ErrHigh=errHigh,
+    )
+
+
 class DummyDatabase(internal.DatabaseInterface):
     """Defines a dummy database that conforms to the DatabaseInterface."""
 
     def get_predicted_solar_yields_for_location(
-        self, location: str,
+        self,
+        location: str,
     ) -> list[internal.DBPredictedYield]:
         """Gets the predicted solar yields for a location.
 
@@ -109,13 +133,60 @@ class DummyDatabase(internal.DatabaseInterface):
 
         for i in range(numSteps):
             time = start + i * step
-            _yield = BasicSolarYieldFunc(time.timestamp())
+            _yield = BasicSolarYieldFunc(int(time.timestamp()))
             yields.append(
                 internal.DBPredictedYield(
-                    TimeUnix=time.timestamp(),
+                    TimeUnix=int(time.timestamp()),
                     YieldKW=int(_yield.YieldKW),
                     ErrLow=int(_yield.ErrLow),
                     ErrHigh=int(_yield.ErrHigh),
+                ),
+            )
+
+        return yields
+
+    def get_predicted_wind_yields_for_location(
+        self,
+        location: str,
+    ) -> list[internal.DBPredictedYield]:
+        """Gets the predicted wind yields for a location.
+
+        Args:
+            location: The location to get the predicted wind yields for.
+        """
+        # Get the window
+        start, end = getWindow()
+        numSteps = int((end - start) / step)
+        yields: list[internal.DBPredictedYield] = []
+
+        for i in range(numSteps):
+            time = start + i * step
+            _yield = BasicWindYieldFunc(int(time.timestamp()))
+            yields.append(
+                internal.DBPredictedYield(
+                    TimeUnix=int(time.timestamp()),
+                    YieldKW=int(_yield.YieldKW),
+                    ErrLow=int(_yield.ErrLow),
+                    ErrHigh=int(_yield.ErrHigh),
+                ),
+            )
+
+        return yields
+
+    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.DBActualYield]:
+        """Gets the actual solar yields for a location."""
+        # Get the window
+        start, end = getWindow()
+        numSteps = int((end - start) / step)
+        yields: list[internal.DBActualYield] = []
+
+        for i in range(numSteps):
+            time = start + i * step
+            _yield = BasicSolarYieldFunc(int(time.timestamp()))
+            yields.append(
+                internal.DBActualYield(
+                    TimeUnix=int(time.timestamp()),
+                    YieldKW=int(_yield.YieldKW),
                 ),
             )
 
