@@ -1,5 +1,6 @@
 """A dummy database that conforms to the DatabaseInterface."""
 import math
+import random
 
 from fake_api import internal
 import datetime as dt
@@ -70,7 +71,23 @@ def BasicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> FakeYield:
     # Instead of completely random noise, apply based on the following process:
     # * A base noise function which is the product of long and short sines
     # * The resultant function modulates with very small amplitude around 1
-    
+    noise = (math.sin(math.pi*time.hour)/20) * (math.sin(math.pi*time.hour/3)) + 1
+    noise = noise * random.random() / 20 + 0.97
+
+    # Create the output value from the base function, noise, and scale factor
+    output = basefunc * noise * scaleFactor
+
+    # Add some random error
+    errLow: float = errHigh: float = 0.0
+    if output > 0:
+        errLow = output - (random.random() * output / 10)
+        errHigh = output + (random.random() * output / 10)
+
+    return FakeYield(
+        YieldKW=output,
+        ErrLow=errLow,
+        ErrHigh=errHigh
+    )
 
 
 class DummyDatabase(internal.DatabaseInterface):
