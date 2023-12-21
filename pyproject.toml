@@ -1,7 +1,7 @@
 # --- PROJECT CONFIGURATION --- #
 
 [build-system]
-requires = ["setuptools>=67", "wheel", "setuptools-git-versioning>=1.13.3"]
+requires = ["setuptools>=69", "wheel", "setuptools-git-versioning>=1.13.3"]
 build-backend = "setuptools.build_meta"
 
 # Metadata (see https://peps.python.org/pep-0621/)
@@ -18,7 +18,6 @@ authors = [
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
     "fastapi >= 0.105.0",
-    "numpy >= 1.23.2",
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
 ]
@@ -53,12 +52,9 @@ enabled = true
 # MyPy configuration
 # * See https://mypy.readthedocs.io/en/stable/index.html
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 warn_return_any = true
 disallow_untyped_defs = true
-plugins = [
-    'numpy.typing.mypy_plugin'
-]
 
 # Ruff configuration
 # * See https://beta.ruff.rs/docs/
