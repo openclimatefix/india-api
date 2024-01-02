@@ -3,9 +3,11 @@
 import abc
 import dataclasses as dc
 
+from pydantic import BaseModel
+
 
 @dc.dataclass
-class DBPredictedYield:
+class DBPredictedYield(BaseModel):
     """Defines the dataclass for predicted yield pulled from a source."""
 
     YieldKW: int
