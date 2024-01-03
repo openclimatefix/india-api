@@ -1,5 +1,5 @@
-"""Defines sources of data for the API."""
+from . import dummydb
 
-from .dummydb import DummyDatabase
-
-__all__ = ["DummyDatabase"]
+__all__ = [
+    "dummydb",
+]

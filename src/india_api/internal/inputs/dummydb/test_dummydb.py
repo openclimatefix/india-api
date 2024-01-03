@@ -1,8 +1,8 @@
 import unittest
 
-from .dummydb import DummyDatabase
+from .client import Client
 
-client = DummyDatabase()
+client = Client()
 
 class TestDummyDatabase(unittest.TestCase):
     def test_get_predicted_wind_yields_for_location(self) -> None:

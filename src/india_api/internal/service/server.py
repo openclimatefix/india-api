@@ -1,21 +1,25 @@
 """Defines the routes of the API."""
 
 import datetime as dt
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
 
 from india_api.internal import (
     DatabaseInterface,
-    DBPredictedYield,
     PredictedYield,
-    inputs,
 )
 
 server = FastAPI()
 
 
-db: DatabaseInterface = inputs.DummyDatabase()
+def get_db_client() -> DatabaseInterface:
+    """Dependency injection for the database client."""
+    return DatabaseInterface()
+
+
+DBClientDependency = Annotated[DatabaseInterface, Depends(get_db_client)]
 
 
 class GetHealthResponse(BaseModel):
@@ -43,9 +47,13 @@ class GetHistoricTimeseriesResponse(BaseModel):
     "/historic_timeseries/{source}/{region}",
     status_code=status.HTTP_200_OK,
 )
-def get_historic_timeseries_route(source: str, region: str) -> GetHistoricTimeseriesResponse:
+def get_historic_timeseries_route(
+    source: str,
+    region: str,
+    db: DBClientDependency,
+) -> GetHistoricTimeseriesResponse:
     """Function for the historic timeseries route."""
-    yields: list[DBPredictedYield] = []
+    yields: list[PredictedYield] = []
     if source == "wind":
         try:
             yields = db.get_predicted_wind_yields_for_location(location=region)
@@ -69,9 +77,8 @@ def get_historic_timeseries_route(source: str, region: str) -> GetHistoricTimese
         )
     return GetHistoricTimeseriesResponse(
         yields=[
-            y.to_predicated_yield()
-            for y in yields
-            if y.TimeUnix < dt.datetime.now(tz=dt.UTC).timestamp()
+            y for y in yields
+            if y.Time < dt.datetime.now(tz=dt.UTC)
         ],
     )
 
@@ -86,9 +93,13 @@ class GetForecastTimeseriesResponse(BaseModel):
     "/forecast_timeseries/{source}/{region}",
     status_code=status.HTTP_200_OK,
 )
-def get_forecast_timeseries_route(source: str, region: str) -> GetForecastTimeseriesResponse:
+def get_forecast_timeseries_route(
+    source: str,
+    region: str,
+    db: DBClientDependency,
+) -> GetForecastTimeseriesResponse:
     """Function for the forecast timeseries route."""
-    yields: list[DBPredictedYield] = []
+    yields: list[PredictedYield] = []
     if source == "wind":
         try:
             yields = db.get_predicted_wind_yields_for_location(location=region)
@@ -112,8 +123,7 @@ def get_forecast_timeseries_route(source: str, region: str) -> GetForecastTimese
         )
     return GetForecastTimeseriesResponse(
         yields=[
-            y.to_predicted_yield()
-            for y in yields
-            if y.TimeUnix >= dt.datetime.now(tz=dt.UTC).timestamp()
+            y for y in yields
+            if y.Time >= dt.datetime.now(tz=dt.UTC)
         ],
     )
