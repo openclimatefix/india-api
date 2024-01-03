@@ -10,7 +10,7 @@ RUN apt -qq update && apt -qq install -y python3-venv gcc libpython3-dev && \
 FROM build AS install-deps
 WORKDIR /app
 COPY pyproject.toml pyproject.toml
-RUN /venv/bin/pip install -q . --no-cache-dir --no-binary=fake_api
+RUN /venv/bin/pip install -q . --no-cache-dir --no-binary=india_api
 
 # Build binary for the package
 # * The package is versioned via setuptools_git_versioning

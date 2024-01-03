@@ -2,7 +2,11 @@
 
 import uvicorn
 
-from fake_api.internal.service import server
+from india_api import internal
+from india_api.internal.service import get_db_client, server
+
+# Dependency inject the desired database client
+server.dependency_overrides[get_db_client] = lambda: internal.inputs.dummydb.Client()
 
 
 def run() -> None:
@@ -20,4 +24,3 @@ def run() -> None:
 
 if __name__ == "__main__":
     run()
-

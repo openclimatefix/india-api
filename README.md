@@ -1,6 +1,6 @@
-# Fake API
+# India API
 
-Defines a fake API to help with building frontends.
+Defines an API to help with building frontends pertaining to displaying wind and solar data.
 
 ## Running the service
 
@@ -12,7 +12,7 @@ Install the dependencies with
 $ pip install -e .[dev]
 ```
 
-The service is then runnable via the command `fake-api`.
+The service is then runnable via the command `india-api`.
 You should see the following output:
 
 ```shell

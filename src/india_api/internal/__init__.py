@@ -2,12 +2,17 @@
 
 from .models import (
     DatabaseInterface,
-    DBActualYield,
-    DBPredictedYield,
+    PredictedYield,
+)
+
+from . import (
+    inputs,
+    service,
 )
 
 __all__ = [
+    "PredictedYield",
     "DatabaseInterface",
-    "DBPredictedYield",
-    "DBActualYield",
+    "inputs",
+    "service",
 ]

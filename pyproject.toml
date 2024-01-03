@@ -6,9 +6,9 @@ build-backend = "setuptools.build_meta"
 
 # Metadata (see https://peps.python.org/pep-0621/)
 [project]
-name = "fake-api"
+name = "india-api"
 dynamic = ["version"] # Set automtically using git: https://setuptools-git-versioning.readthedocs.io/en/stable/
-description = "Fake API for wind and solar data"
+description = "India API for wind and solar data"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11.0"
 license = {text = "MIT License"}
@@ -28,18 +28,22 @@ test = [
 ]
 lint = [
     "mypy >= 1.7.1",
-    "python-lsp-server >= 1.9.0",
     "ruff >= 0.1.7",
 ]
-dev = [
-    "fake-api[test,lint]"
+vim = [
+    "ruff-lsp >= 0.0.48",
+    "python-lsp-server >= 1.9.0",
+    "pylsp-mypy >= 0.6.8",
+]
+all = [
+    "india-api[test,lint,vim]",
 ]
 
 [project.urls]
-repository = "https://github.com/openclimatefix/fake-api"
+repository = "https://github.com/openclimatefix/india-api"
 
 [project.scripts]
-fake-api = "fake_api.cmd.main:run"
+india-api = "india_api.cmd.main:run"
 
 [tool.setuptools]
 include-package-data = false
@@ -55,6 +59,10 @@ enabled = true
 python_version = "3.11"
 warn_return_any = true
 disallow_untyped_defs = true
+
+[tool.pylsp-mypy]
+enabled = true
+dmypy = true
 
 # Ruff configuration
 # * See https://beta.ruff.rs/docs/
