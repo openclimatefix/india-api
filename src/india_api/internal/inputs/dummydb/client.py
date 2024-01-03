@@ -104,6 +104,14 @@ class Client(internal.DatabaseInterface):
 
         return yields
 
+    def get_wind_regions(self) -> list[str]:
+        """Gets the valid wind regions."""
+        return ["dummy_wind_region1", "dummy_wind_region2"]
+
+    def get_solar_regions(self) -> list[str]:
+        """Gets the valid solar regions."""
+        return ["dummy_solar_region1", "dummy_solar_region2"]
+
 
 def _getWindow() -> tuple[dt.datetime, dt.datetime]:
     """Returns the start and end of the window for timeseries data."""

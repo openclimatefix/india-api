@@ -24,3 +24,11 @@ class TestDummyDatabase(unittest.TestCase):
         locID = "testID"
         out = client.get_actual_solar_yields_for_location(locID)
         self.assertIsNotNone(out)
+
+    def test_get_wind_regions(self) -> None:
+        out = client.get_wind_regions()
+        self.assertIsNotNone(out)
+
+    def test_get_solar_regions(self) -> None:
+        out = client.get_solar_regions()
+        self.assertIsNotNone(out)

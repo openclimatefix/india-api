@@ -42,3 +42,13 @@ class DatabaseInterface(abc.ABC):
     def get_actual_wind_yields_for_location(self, location: str) -> list[ActualYield]:
         """Returns a list of actual wind yields for a given location."""
         pass
+
+    @abc.abstractmethod
+    def get_wind_regions(self) -> list[str]:
+        """Returns a list of wind regions."""
+        pass
+
+    @abc.abstractmethod
+    def get_solar_regions(self) -> list[str]:
+        """Returns a list of solar regions."""
+        pass
