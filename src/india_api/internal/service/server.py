@@ -2,9 +2,15 @@
 
 import datetime as dt
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, HTTPException, status
+from pydantic import BaseModel
 
-from fake_api.internal import DatabaseInterface, DBPredictedYield, inputs
+from india_api.internal import (
+    DatabaseInterface,
+    DBPredictedYield,
+    PredictedYield,
+    inputs,
+)
 
 server = FastAPI()
 
@@ -12,57 +18,102 @@ server = FastAPI()
 db: DatabaseInterface = inputs.DummyDatabase()
 
 
-@server.get("/")
-def read_root() -> dict:
-    """Root endpoint for the API."""
-    return {"Hello": "World"}
+class GetHealthResponse(BaseModel):
+    """Model for the health endpoint response."""
+
+    status: int
 
 
-@server.get("/health")
-def get_health_route() -> dict:
+@server.get(
+    "/health",
+    status_code=status.HTTP_200_OK,
+)
+def get_health_route() -> GetHealthResponse:
     """Health endpoint for the API."""
-    return {"status": status.HTTP_200_OK}
+    return GetHealthResponse(status=status.HTTP_200_OK)
 
 
-@server.get("/historic_timeseries/{source}/{region}")
-def get_historic_timeseries_route(source: str, region: str) -> dict:
+class GetHistoricTimeseriesResponse(BaseModel):
+    """Model for the historic timeseries endpoint response."""
+
+    yields: list[PredictedYield]
+
+
+@server.get(
+    "/historic_timeseries/{source}/{region}",
+    status_code=status.HTTP_200_OK,
+)
+def get_historic_timeseries_route(source: str, region: str) -> GetHistoricTimeseriesResponse:
     """Function for the historic timeseries route."""
     yields: list[DBPredictedYield] = []
     if source == "wind":
-        yields = db.get_predicted_wind_yields_for_location(location=region)
+        try:
+            yields = db.get_predicted_wind_yields_for_location(location=region)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error getting wind yields: {e}",
+            ) from e
     elif source == "solar":
-        yields = db.get_predicted_solar_yields_for_location(location=region)
+        try:
+            yields = db.get_predicted_solar_yields_for_location(location=region)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error getting solar yields: {e}",
+            ) from e
     else:
-        return {
-            "error": f"Unknown source {source}",
-            "status": status.HTTP_400_BAD_REQUEST,
-        }
-    return {
-        "yields": [
-            y.__dict__ for y in yields if y.TimeUnix < dt.datetime.now(tz=dt.UTC).timestamp()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown source {source}",
+        )
+    return GetHistoricTimeseriesResponse(
+        yields=[
+            y.to_predicated_yield()
+            for y in yields
+            if y.TimeUnix < dt.datetime.now(tz=dt.UTC).timestamp()
         ],
-        "status": status.HTTP_200_OK,
-        "error": "",
-    }
+    )
 
 
-@server.get("/forecast_timeseries/{source}/{region}")
-def get_forecast_timeseries_route(source: str, region: str) -> dict:
+class GetForecastTimeseriesResponse(BaseModel):
+    """Model for the forecast timeseries endpoint response."""
+
+    yields: list[PredictedYield]
+
+
+@server.get(
+    "/forecast_timeseries/{source}/{region}",
+    status_code=status.HTTP_200_OK,
+)
+def get_forecast_timeseries_route(source: str, region: str) -> GetForecastTimeseriesResponse:
     """Function for the forecast timeseries route."""
     yields: list[DBPredictedYield] = []
     if source == "wind":
-        yields = db.get_predicted_wind_yields_for_location(location=region)
+        try:
+            yields = db.get_predicted_wind_yields_for_location(location=region)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error getting wind yields: {e}",
+            ) from e
     elif source == "solar":
-        yields = db.get_predicted_solar_yields_for_location(location=region)
+        try:
+            yields = db.get_predicted_solar_yields_for_location(location=region)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error getting solar yields: {e}",
+            ) from e
     else:
-        return {
-            "error": f"Unknown source {source}",
-            "status": status.HTTP_400_BAD_REQUEST,
-        }
-    return {
-        "yields": [
-            y.__dict__ for y in yields if y.TimeUnix >= dt.datetime.now(tz=dt.UTC).timestamp()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown source {source}",
+        )
+    return GetForecastTimeseriesResponse(
+        yields=[
+            y.to_predicted_yield()
+            for y in yields
+            if y.TimeUnix >= dt.datetime.now(tz=dt.UTC).timestamp()
         ],
-        "status": status.HTTP_200_OK,
-        "error": "",
-    }
+    )

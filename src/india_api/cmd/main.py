@@ -2,7 +2,7 @@
 
 import uvicorn
 
-from fake_api.internal.service import server
+from india_api.internal.service import server
 
 
 def run() -> None:

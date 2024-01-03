@@ -4,7 +4,7 @@ import datetime as dt
 import math
 import random
 
-from fake_api import internal
+from india_api import internal
 
 # step defines the time interval between each data point
 step: dt.timedelta = dt.timedelta(minutes=5)

@@ -43,7 +43,7 @@ all = [
 repository = "https://github.com/openclimatefix/india-api"
 
 [project.scripts]
-fake-api = "india_api.cmd.main:run"
+india-api = "india_api.cmd.main:run"
 
 [tool.setuptools]
 include-package-data = false
