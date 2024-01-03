@@ -3,7 +3,7 @@
 import datetime as dt
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, status, Query
+from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
 
 from india_api.internal import (
