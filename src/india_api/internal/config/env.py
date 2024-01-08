@@ -52,8 +52,9 @@ class EnvParser:
                     # Cast to desired type
                     self.__setattr__(field, t(env_value))
 
+
 class Config(EnvParser):
     """Config for the application."""
 
     SOURCE: str = "dummydb"
-
+    PORT: int = 8000

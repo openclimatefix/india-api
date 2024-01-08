@@ -11,6 +11,7 @@ cfg = Config()
 
 match cfg.SOURCE:
     case "dummydb":
+
         def get_db_client_override() -> internal.DatabaseInterface:
             return internal.inputs.dummydb.Client()
     case _:
@@ -25,7 +26,7 @@ def run() -> None:
     uvicorn.run(
         server,
         host="0.0.0.0",
-        port=8000,
+        port=cfg.PORT,
         reload=False,
         log_level="debug",
         workers=1,
