@@ -30,7 +30,6 @@ def run() -> None:
         reload=False,
         log_level="debug",
         workers=1,
-        limit_concurrency=2,
     )
 
 
