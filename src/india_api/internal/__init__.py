@@ -2,7 +2,7 @@
 
 from .models import (
     DatabaseInterface,
-    PredictedYield,
+    PredictedPower,
 )
 
 from . import (
@@ -11,7 +11,7 @@ from . import (
 )
 
 __all__ = [
-    "PredictedYield",
+    "PredictedPower",
     "DatabaseInterface",
     "inputs",
     "service",

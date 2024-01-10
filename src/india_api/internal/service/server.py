@@ -1,6 +1,7 @@
 """Defines the routes of the API."""
 
 import datetime as dt
+import pytz
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -8,16 +9,22 @@ from pydantic import BaseModel
 
 from india_api.internal import (
     DatabaseInterface,
-    PredictedYield,
+    PredictedPower,
 )
 
+
+local_tz = pytz.timezone("Asia/Kolkata")
+
 server = FastAPI()
+
 
 def get_db_client() -> DatabaseInterface:
     """Dependency injection for the database client."""
     return DatabaseInterface()
 
+
 DBClientDependency = Annotated[DatabaseInterface, Depends(get_db_client)]
+
 
 def validate_source(source: str) -> str:
     """Validate the source parameter."""
@@ -28,15 +35,34 @@ def validate_source(source: str) -> str:
         )
     return source
 
+
 ValidSourceDependency = Annotated[str, Depends(validate_source)]
+
+
+route_tags = [
+    {
+        "name": "Forecast Routes",
+        "description": "Routes for fetching forecast power values.",
+    },
+    {
+        "name": "API Information",
+        "description": "Routes pertaining to the usage and status of the API.",
+    },
+]
+
+
+# === API ROUTES ==============================================================
+
 
 class GetHealthResponse(BaseModel):
     """Model for the health endpoint response."""
 
     status: int
 
+
 @server.get(
     "/health",
+    tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
 def get_health_route() -> GetHealthResponse:
@@ -44,85 +70,85 @@ def get_health_route() -> GetHealthResponse:
     return GetHealthResponse(status=status.HTTP_200_OK)
 
 
-class GetHistoricTimeseriesResponse(BaseModel):
-    """Model for the historic timeseries endpoint response."""
+class GetHistoricGenerationResponse(BaseModel):
+    """Model for the historic generation endpoint response."""
 
-    yields: list[PredictedYield]
+    values: list[PredictedPower]
 
 
 @server.get(
-    "/{source}/{region}/historic_timeseries",
+    "/{source}/{region}/historic_generation",
+    tags=["Forecast Routes"],
     status_code=status.HTTP_200_OK,
 )
 def get_historic_timeseries_route(
     source: ValidSourceDependency,
     region: str,
     db: DBClientDependency,
-) -> GetHistoricTimeseriesResponse:
-    """Function for the historic timeseries route."""
-    yields: list[PredictedYield] = []
+) -> GetHistoricGenerationResponse:
+    """Function for the historic generation route."""
+    values: list[PredictedPower] = []
 
     try:
         if source == "wind":
-            yields = db.get_predicted_wind_yields_for_location(location=region)
+            values = db.get_predicted_wind_yields_for_location(location=region)
         elif source == "solar":
-            yields = db.get_predicted_solar_yields_for_location(location=region)
+            values = db.get_predicted_solar_yields_for_location(location=region)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error getting solar yields: {e}",
         ) from e
 
-    return GetHistoricTimeseriesResponse(
-        yields=[
-            y for y in yields
-            if y.Time < dt.datetime.now(tz=dt.UTC)
-        ],
+    return GetHistoricGenerationResponse(
+        values=[y.to_timezone(tz=local_tz) for y in values if y.Time < dt.datetime.now(tz=dt.UTC)],
     )
 
 
-class GetForecastTimeseriesResponse(BaseModel):
-    """Model for the forecast timeseries endpoint response."""
+class GetForecastGenerationResponse(BaseModel):
+    """Model for the forecast generation endpoint response."""
 
-    yields: list[PredictedYield]
+    values: list[PredictedPower]
+
 
 @server.get(
-    "/{source}/{region}/forecast_timeseries",
+    "/{source}/{region}/forecast_generation",
+    tags=["Forecast Routes"],
     status_code=status.HTTP_200_OK,
 )
 def get_forecast_timeseries_route(
     source: ValidSourceDependency,
     region: str,
     db: DBClientDependency,
-) -> GetForecastTimeseriesResponse:
-    """Function for the forecast timeseries route."""
-    yields: list[PredictedYield] = []
+) -> GetForecastGenerationResponse:
+    """Function for the forecast generation route."""
+    values: list[PredictedPower] = []
 
     try:
         if source == "wind":
-            yields = db.get_predicted_wind_yields_for_location(location=region)
+            values = db.get_predicted_wind_yields_for_location(location=region)
         elif source == "solar":
-            yields = db.get_predicted_solar_yields_for_location(location=region)
+            values = db.get_predicted_solar_yields_for_location(location=region)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error getting yields: {e}",
         ) from e
 
-    return GetForecastTimeseriesResponse(
-        yields=[
-            y for y in yields
-            if y.Time >= dt.datetime.now(tz=dt.UTC)
-        ],
+    return GetForecastGenerationResponse(
+        values=[y.to_timezone(tz=local_tz) for y in values if y.Time >= dt.datetime.now(tz=dt.UTC)],
     )
+
 
 class GetSourcesResponse(BaseModel):
     """Model for the sources endpoint response."""
 
     sources: list[str]
 
+
 @server.get(
     "/sources",
+    tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
 def get_sources_route() -> GetSourcesResponse:
@@ -135,8 +161,10 @@ class GetRegionsResponse(BaseModel):
 
     regions: list[str]
 
+
 @server.get(
     "/{source}/regions",
+    tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
 def get_regions_route(
@@ -149,4 +177,3 @@ def get_regions_route(
     elif source == "solar":
         regions = db.get_solar_regions()
     return GetRegionsResponse(regions=regions)
-

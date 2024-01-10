@@ -8,7 +8,7 @@ from india_api import internal
 from ._models import DummyDBPredictedYield
 
 # step defines the time interval between each data point
-step: dt.timedelta = dt.timedelta(minutes=5)
+step: dt.timedelta = dt.timedelta(minutes=15)
 
 
 class Client(internal.DatabaseInterface):
@@ -17,7 +17,7 @@ class Client(internal.DatabaseInterface):
     def get_predicted_solar_yields_for_location(
         self,
         location: str,
-    ) -> list[internal.PredictedYield]:
+    ) -> list[internal.PredictedPower]:
         """Gets the predicted solar yields for a location.
 
         Args:
@@ -26,24 +26,24 @@ class Client(internal.DatabaseInterface):
         # Get the window
         start, end = _getWindow()
         numSteps = int((end - start) / step)
-        yields: list[internal.PredictedYield] = []
+        values: list[internal.PredictedPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicSolarYieldFunc(int(time.timestamp()))
-            yields.append(
-                internal.PredictedYield(
+            values.append(
+                internal.PredictedPower(
                     Time=time,
-                    YieldKW=int(_yield.YieldKW),
+                    PowerKW=int(_yield.YieldKW),
                 ),
             )
 
-        return yields
+        return values
 
     def get_predicted_wind_yields_for_location(
         self,
         location: str,
-    ) -> list[internal.PredictedYield]:
+    ) -> list[internal.PredictedPower]:
         """Gets the predicted wind yields for a location.
 
         Args:
@@ -52,57 +52,57 @@ class Client(internal.DatabaseInterface):
         # Get the window
         start, end = _getWindow()
         numSteps = int((end - start) / step)
-        yields: list[internal.PredictedYield] = []
+        values: list[internal.PredictedPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicWindYieldFunc(int(time.timestamp()))
-            yields.append(
-                internal.PredictedYield(
+            values.append(
+                internal.PredictedPower(
                     Time=time,
-                    YieldKW=int(_yield.YieldKW),
+                    PowerKW=int(_yield.YieldKW),
                 ),
             )
 
-        return yields
+        return values
 
-    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.PredictedYield]:
+    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
         """Gets the actual solar yields for a location."""
         # Get the window
         start, end = _getWindow()
         numSteps = int((end - start) / step)
-        yields: list[internal.PredictedYield] = []
+        values: list[internal.PredictedPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicSolarYieldFunc(int(time.timestamp()))
-            yields.append(
-                internal.PredictedYield(
+            values.append(
+                internal.PredictedPower(
                     Time=time,
-                    YieldKW=int(_yield.YieldKW),
+                    PowerKW=int(_yield.YieldKW),
                 ),
             )
 
-        return yields
+        return values
 
-    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedYield]:
+    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
         """Gets the actual wind yields for a location."""
         # Get the window
         start, end = _getWindow()
         numSteps = int((end - start) / step)
-        yields: list[internal.PredictedYield] = []
+        values: list[internal.PredictedPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicWindYieldFunc(int(time.timestamp()))
-            yields.append(
-                internal.PredictedYield(
+            values.append(
+                internal.PredictedPower(
                     Time=time,
-                    YieldKW=int(_yield.YieldKW),
+                    PowerKW=int(_yield.YieldKW),
                 ),
             )
 
-        return yields
+        return values
 
     def get_wind_regions(self) -> list[str]:
         """Gets the valid wind regions."""
