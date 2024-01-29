@@ -27,6 +27,9 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "unittest-xml-reporting == 3.2.0",
+    "pytest >= 8.0.0",
+    "pytest-cov >= 4.1.0",
+    "testcontainers >= 3.7.1",
 ]
 lint = [
     "mypy >= 1.7.1",
