@@ -2,6 +2,11 @@ FROM python:3.11-slim
 
 # install requirements
 RUN apt-get clean
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  libatlas-base-dev \
+  libgdal-dev \
+  gfortran
 
 # Copy required files.
 WORKDIR /app
