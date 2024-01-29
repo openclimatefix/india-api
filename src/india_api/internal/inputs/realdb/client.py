@@ -12,9 +12,6 @@ from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
 
 from india_api import internal
 
-# step defines the time interval between each data point
-step: dt.timedelta = dt.timedelta(minutes=15)
-
 
 class Client(internal.DatabaseInterface):
     """Defines a real database that conforms to the DatabaseInterface."""

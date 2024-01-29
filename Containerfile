@@ -4,6 +4,7 @@ FROM debian:12-slim AS build
 RUN apt -qq update && apt -qq install -y python3-venv gcc libpython3-dev && \
     python3 -m venv /venv && \
     /venv/bin/pip install --upgrade -q pip setuptools wheel
+RUN apt -qq install -y gdal-bin libgdal-dev g++
 
 # Install packages into the virtualenv as a separate step
 # * Only re-execute this step when the requirements files change
