@@ -26,6 +26,13 @@ class ActualPower(BaseModel):
     PowerKW: int
     Time: dt.datetime
 
+    def to_timezone(self, tz: dt.timezone) -> "ActualPower":
+        """Converts the time of this predicted power value to the given timezone."""
+        return ActualPower(
+            PowerKW=self.PowerKW,
+            Time=self.Time.astimezone(tz=tz),
+        )
+
 
 class DatabaseInterface(abc.ABC):
     """Defines the interface for a generic database connection."""

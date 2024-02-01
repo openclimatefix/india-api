@@ -10,8 +10,13 @@ from india_api.internal.service import get_db_client, server
 cfg = Config()
 
 match cfg.SOURCE:
-    case "dummydb":
+    case "indiadb":
+        if cfg.DB_URL == '' or cfg.DB_URL == None:
+            raise OSError(f"DB_URL env var is required using db source: {cfg.SOURCE}")
 
+        def get_db_client_override() -> internal.DatabaseInterface:
+            return internal.inputs.indiadb.Client(cfg.DB_URL)
+    case "dummydb":
         def get_db_client_override() -> internal.DatabaseInterface:
             return internal.inputs.dummydb.Client()
     case _:

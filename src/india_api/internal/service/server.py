@@ -2,6 +2,7 @@
 
 import datetime as dt
 import pytz
+import logging
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -11,6 +12,9 @@ from india_api.internal import (
     DatabaseInterface,
     PredictedPower,
 )
+from india_api.internal.models import ActualPower
+
+log = logging.getLogger(__name__)
 
 
 local_tz = pytz.timezone("Asia/Kolkata")
@@ -73,7 +77,7 @@ def get_health_route() -> GetHealthResponse:
 class GetHistoricGenerationResponse(BaseModel):
     """Model for the historic generation endpoint response."""
 
-    values: list[PredictedPower]
+    values: list[ActualPower]
 
 
 @server.get(
@@ -87,13 +91,13 @@ def get_historic_timeseries_route(
     db: DBClientDependency,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
-    values: list[PredictedPower] = []
+    values: list[ActualPower] = []
 
     try:
         if source == "wind":
-            values = db.get_predicted_wind_yields_for_location(location=region)
+            values = db.get_actual_wind_yields_for_location(location=region)
         elif source == "solar":
-            values = db.get_predicted_solar_yields_for_location(location=region)
+            values = db.get_actual_solar_yields_for_location(location=region)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
