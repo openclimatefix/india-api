@@ -1,17 +1,15 @@
 """ Test fixtures to set up fake database for testing. """
+import logging
 import os
 from datetime import datetime, timedelta
 
 import pytest
-from pvsite_datamodel.sqlmodels import (
-    Base,
-    ForecastSQL,
-    ForecastValueSQL,
-    GenerationSQL, SiteSQL
-)
+from pvsite_datamodel.sqlmodels import Base, ForecastSQL, ForecastValueSQL, GenerationSQL, SiteSQL
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
+
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
@@ -22,74 +20,79 @@ def engine():
         url = postgres.get_connection_url()
         os.environ["DB_URL"] = url
         engine = create_engine(url)
-        Base.metadata.create_all(engine)
 
         yield engine
 
 
+@pytest.fixture(scope="session")
+def tables(engine):
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
+
+
 @pytest.fixture()
-def db_session(engine):
+def db_session(engine, tables):
     """Return a sqlalchemy session, which tears down everything properly post-test."""
 
     connection = engine.connect()
     # begin the nested transaction
     transaction = connection.begin()
     # use the connection with the already started transaction
+    session = Session(bind=connection)
 
-    with Session(bind=connection) as session:
-        yield session
+    yield session
 
-        session.close()
-        # roll back the broader transaction
-        transaction.rollback()
-        # put back the connection to the connection pool
-        connection.close()
-        session.flush()
-
-    engine.dispose()
-
-
-@pytest.fixture(scope="session", autouse=True)
-def db_data(engine):
-    """Seed some initial data into DB."""
-
-    with engine.connect() as connection:
-        with Session(bind=connection) as session:
-            # PV site
-            site = SiteSQL(
-                client_site_id=1,
-                latitude=20.59,
-                longitude=78.96,
-                capacity_kw=4,
-                ml_id=1,
-                asset_type="pv",
-                country="india"
-            )
-            session.add(site)
-
-            # Wind site
-            site = SiteSQL(
-                client_site_id=2,
-                latitude=20.59,
-                longitude=78.96,
-                capacity_kw=4,
-                ml_id=2,
-                asset_type="wind",
-                country="india"
-            )
-            session.add(site)
-
-            session.commit()
+    session.close()
+    # roll back the broader transaction
+    transaction.rollback()
+    # put back the connection to the connection pool
+    connection.close()
 
 
 @pytest.fixture()
-def generations(db_session):
+def sites(db_session):
+    """Seed some initial data into DB."""
+
+    sites = []
+    # PV site
+    site = SiteSQL(
+        client_site_id=1,
+        latitude=20.59,
+        longitude=78.96,
+        capacity_kw=4,
+        ml_id=1,
+        asset_type="pv",
+        country="india",
+    )
+    db_session.add(site)
+    sites.append(site)
+
+    # Wind site
+    site = SiteSQL(
+        client_site_id=2,
+        latitude=20.59,
+        longitude=78.96,
+        capacity_kw=4,
+        ml_id=2,
+        asset_type="wind",
+        country="india",
+    )
+    db_session.add(site)
+    sites.append(site)
+
+    db_session.commit()
+
+    return sites
+
+
+@pytest.fixture()
+def generations(db_session, sites):
     """Create some fake generations"""
     start_times = [datetime.today() - timedelta(minutes=x) for x in range(10)]
 
     all_generations = []
 
-    sites = db_session.query(SiteSQL).all()
     for site in sites:
         for i in range(0, 10):
             generation = GenerationSQL(
@@ -107,7 +110,7 @@ def generations(db_session):
 
 
 @pytest.fixture()
-def forecast_values(db_session):
+def forecast_values(db_session, sites):
     """Create some fake forecast values"""
     forecast_values = []
     forecast_version: str = "0.0.0"
@@ -120,7 +123,6 @@ def forecast_values(db_session):
     # To make things trickier we make a second forecast at the same for one of the timestamps.
     timestamps = timestamps + timestamps[-1:]
 
-    sites = db_session.query(SiteSQL).all()
     for site in sites:
         for timestamp in timestamps:
             forecast: ForecastSQL = ForecastSQL(

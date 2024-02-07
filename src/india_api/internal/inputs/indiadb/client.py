@@ -3,8 +3,13 @@ import datetime as dt
 import logging
 
 from pvsite_datamodel import DatabaseConnection
-from pvsite_datamodel.read import get_sites_by_country, get_latest_forecast_values_by_site, get_pv_generation_by_sites
+from pvsite_datamodel.read import (
+    get_sites_by_country,
+    get_latest_forecast_values_by_site,
+    get_pv_generation_by_sites,
+)
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
+from sqlalchemy.orm import Session
 
 from india_api import internal
 
@@ -14,10 +19,19 @@ log = logging.getLogger(__name__)
 class Client(internal.DatabaseInterface):
     """Defines India DB client that conforms to the DatabaseInterface."""
 
+    session: Session = None
+
     def __init__(self, database_url: str) -> None:
         """Initialize the client with a SQLAlchemy database connection and session."""
 
         self.connection = DatabaseConnection(url=database_url, echo=False)
+
+    def _get_session(self):
+        """Allows for overriding the default session (useful for testing)"""
+        if self.session is None:
+            return self.connection.get_session()
+        else:
+            return self.session
 
     def get_predicted_yields_for_location(
         self,
@@ -30,7 +44,7 @@ class Client(internal.DatabaseInterface):
         start, end = _getWindow()
 
         # get site uuid
-        with self.connection.get_session() as session:
+        with self._get_session() as session:
             sites = get_sites_by_country(session, country="india")
 
             # just select wind site
@@ -45,7 +59,9 @@ class Client(internal.DatabaseInterface):
 
         # convert ForecastValueSQL to PredictedPower
         values = [
-            internal.PredictedPower(PowerKW=value.forecast_power_kw, Time=value.start_utc.astimezone(dt.UTC))
+            internal.PredictedPower(
+                PowerKW=value.forecast_power_kw, Time=value.start_utc.astimezone(dt.UTC)
+            )
             for value in forecast_values
         ]
 
@@ -62,7 +78,7 @@ class Client(internal.DatabaseInterface):
         start, end = _getWindow()
 
         # get site uuid
-        with self.connection.get_session() as session:
+        with self._get_session() as session:
             sites = get_sites_by_country(session, country="india")
 
             # just select wind site
@@ -76,7 +92,9 @@ class Client(internal.DatabaseInterface):
 
         # convert from GenerationSQL to PredictedPower
         values = [
-            internal.ActualPower(PowerKW=value.generation_power_kw, Time=value.start_utc.astimezone(dt.UTC))
+            internal.ActualPower(
+                PowerKW=value.generation_power_kw, Time=value.start_utc.astimezone(dt.UTC)
+            )
             for value in values
         ]
 
@@ -120,7 +138,6 @@ class Client(internal.DatabaseInterface):
     def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
         """Gets the actual wind yields for a location."""
 
-        log.error('test')
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.wind)
 
     def get_wind_regions(self) -> list[str]:
