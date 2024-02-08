@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class PredictedPower(BaseModel):
     """Defines the data structure for a predicted power value returned by the API."""
 
-    PowerKW: int
+    PowerKW: float
     Time: dt.datetime
 
     def to_timezone(self, tz: dt.timezone) -> "PredictedPower":
@@ -23,7 +23,7 @@ class PredictedPower(BaseModel):
 class ActualPower(BaseModel):
     """Defines the data structure for an actual power value returned by the API."""
 
-    PowerKW: int
+    PowerKW: float
     Time: dt.datetime
 
     def to_timezone(self, tz: dt.timezone) -> "ActualPower":

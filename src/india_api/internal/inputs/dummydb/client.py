@@ -6,6 +6,7 @@ import random
 from india_api import internal
 
 from ._models import DummyDBPredictedYield
+from ..utils import get_window
 
 # step defines the time interval between each data point
 step: dt.timedelta = dt.timedelta(minutes=15)
@@ -24,7 +25,7 @@ class Client(internal.DatabaseInterface):
             location: The location to get the predicted solar yields for.
         """
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
         numSteps = int((end - start) / step)
         values: list[internal.PredictedPower] = []
 
@@ -50,7 +51,7 @@ class Client(internal.DatabaseInterface):
             location: The location to get the predicted wind yields for.
         """
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
         numSteps = int((end - start) / step)
         values: list[internal.PredictedPower] = []
 
@@ -69,7 +70,7 @@ class Client(internal.DatabaseInterface):
     def get_actual_solar_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
         """Gets the actual solar yields for a location."""
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
         numSteps = int((end - start) / step)
         values: list[internal.PredictedPower] = []
 
@@ -88,7 +89,7 @@ class Client(internal.DatabaseInterface):
     def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
         """Gets the actual wind yields for a location."""
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
         numSteps = int((end - start) / step)
         values: list[internal.PredictedPower] = []
 
@@ -111,25 +112,6 @@ class Client(internal.DatabaseInterface):
     def get_solar_regions(self) -> list[str]:
         """Gets the valid solar regions."""
         return ["dummy_solar_region1", "dummy_solar_region2"]
-
-
-def _getWindow() -> tuple[dt.datetime, dt.datetime]:
-    """Returns the start and end of the window for timeseries data."""
-    # Window start is the beginning of the day two days ago
-    start = (dt.datetime.now(tz=dt.UTC) - dt.timedelta(days=2)).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    # Window end is the beginning of the day two days ahead
-    end = (dt.datetime.now(tz=dt.UTC) + dt.timedelta(days=2)).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    return (start, end)
 
 
 def _basicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedYield:

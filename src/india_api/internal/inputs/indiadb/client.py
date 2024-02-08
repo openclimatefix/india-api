@@ -12,6 +12,7 @@ from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
 from sqlalchemy.orm import Session
 
 from india_api import internal
+from india_api.internal.inputs.utils import get_window
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class Client(internal.DatabaseInterface):
         """Gets the predicted yields for a location."""
 
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
 
         # get site uuid
         with self._get_session() as session:
@@ -75,7 +76,7 @@ class Client(internal.DatabaseInterface):
         """Gets the predicted yields for a location."""
 
         # Get the window
-        start, end = _getWindow()
+        start, end = get_window()
 
         # get site uuid
         with self._get_session() as session:
@@ -147,23 +148,3 @@ class Client(internal.DatabaseInterface):
     def get_solar_regions(self) -> list[str]:
         """Gets the valid solar regions."""
         return ["ruvnl"]
-
-
-def _getWindow() -> tuple[dt.datetime, dt.datetime]:
-    """Returns the start and end of the window for timeseries data."""
-
-    # Window start is the beginning of the day two days ago
-    start = (dt.datetime.now(tz=dt.UTC) - dt.timedelta(days=2)).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    # Window end is the beginning of the day two days ahead
-    end = (dt.datetime.now(tz=dt.UTC) + dt.timedelta(days=2)).replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    return start, end
