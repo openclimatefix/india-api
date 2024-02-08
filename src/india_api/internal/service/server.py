@@ -15,11 +15,16 @@ from india_api.internal import (
 from india_api.internal.models import ActualPower
 
 log = logging.getLogger(__name__)
+version = "0.1.5"
 
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
-server = FastAPI()
+server = FastAPI(
+    version=version,
+    title="India API",
+    description="API providing OCF Forecast for India",
+)
 
 
 def get_db_client() -> DatabaseInterface:
