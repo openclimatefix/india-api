@@ -56,5 +56,6 @@ class EnvParser:
 class Config(EnvParser):
     """Config for the application."""
 
-    SOURCE: str = "dummydb"
+    SOURCE: str = "indiadb"
+    DB_URL: str = ""
     PORT: int = 8000

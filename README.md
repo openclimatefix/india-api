@@ -49,7 +49,7 @@ and create a new environment with your favorite environment manager.
 Install all the dependencies with
 
 ```
-pip install -e .[all]
+pip install -e ".[all]"
 ```
 
 You can run the service with the command `india-api`.
