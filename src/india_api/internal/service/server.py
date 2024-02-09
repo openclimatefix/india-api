@@ -86,7 +86,7 @@ class GetHistoricGenerationResponse(BaseModel):
 
 
 @server.get(
-    "/{source}/{region}/historic_generation",
+    "/{source}/{region}/generation",
     tags=["Forecast Routes"],
     status_code=status.HTTP_200_OK,
 )
@@ -121,7 +121,7 @@ class GetForecastGenerationResponse(BaseModel):
 
 
 @server.get(
-    "/{source}/{region}/forecast_generation",
+    "/{source}/{region}/forecast",
     tags=["Forecast Routes"],
     status_code=status.HTTP_200_OK,
 )
