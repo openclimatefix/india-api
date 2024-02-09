@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     uses: openclimatefix/.github/.github/workflows/bump-version.yml@v1.7.2
     secrets:
-      PAT_TOKEN = ${{ secrets.PAT_TOKEN }}
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
     if: github.ref == 'refs/heads/main'
 
   # Define a dependencies job that runs on all branches and PRs
