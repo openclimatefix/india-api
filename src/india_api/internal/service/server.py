@@ -15,7 +15,7 @@ from india_api.internal import (
 from india_api.internal.models import ActualPower
 
 log = logging.getLogger(__name__)
-version = "0.1.5"
+version = "0.1.6"
 
 
 local_tz = pytz.timezone("Asia/Kolkata")
