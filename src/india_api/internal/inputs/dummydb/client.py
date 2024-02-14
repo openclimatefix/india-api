@@ -67,18 +67,18 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.ActualPower]:
         """Gets the actual solar yields for a location."""
         # Get the window
         start, end = get_window()
         numSteps = int((end - start) / step)
-        values: list[internal.PredictedPower] = []
+        values: list[internal.ActualPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicSolarYieldFunc(int(time.timestamp()))
             values.append(
-                internal.PredictedPower(
+                internal.ActualPower(
                     Time=time,
                     PowerKW=int(_yield.YieldKW),
                 ),
@@ -86,18 +86,18 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.ActualPower]:
         """Gets the actual wind yields for a location."""
         # Get the window
         start, end = get_window()
         numSteps = int((end - start) / step)
-        values: list[internal.PredictedPower] = []
+        values: list[internal.ActualPower] = []
 
         for i in range(numSteps):
             time = start + i * step
             _yield = _basicWindYieldFunc(int(time.timestamp()))
             values.append(
-                internal.PredictedPower(
+                internal.ActualPower(
                     Time=time,
                     PowerKW=int(_yield.YieldKW),
                 ),
