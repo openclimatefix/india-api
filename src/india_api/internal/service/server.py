@@ -155,7 +155,7 @@ def get_forecast_timeseries_route(
         ) from e
 
     return GetForecastGenerationResponse(
-        values=[y.to_timezone(tz=local_tz) for y in values if y.Time >= dt.datetime.now(tz=dt.UTC)],
+        values=[y.to_timezone(tz=local_tz) for y in values],
     )
 
 
