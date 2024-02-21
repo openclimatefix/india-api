@@ -104,8 +104,8 @@ class GetHistoricGenerationResponse(BaseModel):
 def get_historic_timeseries_route(
     source: ValidSourceDependency,
     region: str,
-    resample_minutes: Optional[int] = None,
     db: DBClientDependency,
+    resample_minutes: Optional[int] = None,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
     values: list[ActualPower] = []
