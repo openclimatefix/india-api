@@ -4,7 +4,7 @@ import os
 import datetime as dt
 import pytz
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +15,7 @@ from india_api.internal import (
     PredictedPower,
 )
 from india_api.internal.models import ActualPower
+from india_api.internal.service.resample import resample_generation
 
 log = logging.getLogger(__name__)
 version = "0.1.10"
@@ -103,6 +104,7 @@ class GetHistoricGenerationResponse(BaseModel):
 def get_historic_timeseries_route(
     source: ValidSourceDependency,
     region: str,
+    resample_minutes: Optional[int] = None,
     db: DBClientDependency,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
@@ -118,6 +120,9 @@ def get_historic_timeseries_route(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error getting solar yields: {e}",
         ) from e
+
+    if resample_minutes is not None:
+        values = resample_generation(values=values, internal_minutes=resample_minutes)
 
     return GetHistoricGenerationResponse(
         values=[y.to_timezone(tz=local_tz) for y in values if y.Time < dt.datetime.now(tz=dt.UTC)],
