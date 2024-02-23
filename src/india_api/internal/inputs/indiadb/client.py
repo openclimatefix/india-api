@@ -94,7 +94,7 @@ class Client(internal.DatabaseInterface):
         # convert from GenerationSQL to PredictedPower
         values = [
             internal.ActualPower(
-                PowerKW=value.generation_power_kw, Time=value.start_utc.astimezone(dt.UTC)
+                PowerKW=int(value.generation_power_kw), Time=value.start_utc.astimezone(dt.UTC)
             )
             for value in values
         ]
