@@ -17,6 +17,9 @@ def resample_generation(values: list[ActualPower], internal_minutes: int) -> lis
     # resample
     df = df.set_index("Time").resample(f"{internal_minutes}T").mean().dropna()
 
+    # convert to PowerKW to integers
+    df.PowerKW = df.PowerKW.astype(int)
+
     # convert back to list of ActualPower
     return [
         ActualPower(
