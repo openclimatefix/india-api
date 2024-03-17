@@ -14,7 +14,7 @@ def test_resample_generation_1_period():
 
     assert len(values) == 1
     assert values[0].Time == pd.Timestamp("2021-01-01T00:00:00Z")
-    assert values[0].PowerKW == 1.5
+    assert values[0].PowerKW == 1.0  # rounded down from 1.5
 
 
 def test_resample_generation_3_periods_with_gaps():
@@ -32,8 +32,8 @@ def test_resample_generation_3_periods_with_gaps():
 
     assert len(values) == 3
     assert values[0].Time == pd.Timestamp("2021-01-01T00:00:00Z")
-    assert values[0].PowerKW == 1.5
+    assert values[0].PowerKW == 1  # rounded down from 1.5
     assert values[1].Time == pd.Timestamp("2021-01-01T00:15:00Z")
-    assert values[1].PowerKW == 3.0
+    assert values[1].PowerKW == 3
     assert values[2].Time == pd.Timestamp("2021-01-01T01:30:00Z")
-    assert values[2].PowerKW == 5.0
+    assert values[2].PowerKW == 5
