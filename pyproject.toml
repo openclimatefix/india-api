@@ -18,7 +18,7 @@ authors = [
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
     "fastapi >= 0.105.0",
-    "pvsite-datamodel >= 1.0.10",
+    "pvsite-datamodel >= 1.0.15",
     "pytz >= 2023.3",
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
@@ -29,7 +29,7 @@ test = [
     "unittest-xml-reporting == 3.2.0",
     "pytest >= 8.0.0",
     "pytest-cov >= 4.1.0",
-    "testcontainers >= 3.7.1",
+    "testcontainers == 3.7.1",
 ]
 lint = [
     "mypy >= 1.7.1",
