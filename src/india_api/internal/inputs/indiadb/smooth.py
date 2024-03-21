@@ -15,6 +15,9 @@ def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
     # smooth
     df = df.set_index("Time").rolling(4, min_periods=1).mean()
 
+    # convert to ints
+    df["PowerKW"] = df["PowerKW"].astype(int)
+
     # convert back to list of PredictedPower
     return [
         PredictedPower(
