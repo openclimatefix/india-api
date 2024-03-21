@@ -13,7 +13,7 @@ def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
     )
 
     # smooth
-    df = df.set_index("Time").rolling(4).mean()
+    df = df.set_index("Time").rolling(4, min_periods=1).mean()
 
     # convert back to list of PredictedPower
     return [
