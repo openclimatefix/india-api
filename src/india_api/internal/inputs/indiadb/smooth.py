@@ -1,11 +1,9 @@
 import pandas as pd
-from india_api.internal import (
-    PredictedPower
-)
+from india_api.internal import PredictedPower
 
 
 def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
-
+    """Smooths the forecast values."""
     # convert to dataframe
     df = pd.DataFrame(
         {
