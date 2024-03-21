@@ -21,7 +21,6 @@ class TestIndiaDBClient:
     def test_get_predicted_wind_yields_for_location(self, client, forecast_values) -> None:
         locID = "testID"
         result = client.get_predicted_wind_yields_for_location(locID)
-
         assert len(result) == 110
         for record in result:
             assert isinstance(record, PredictedPower)
