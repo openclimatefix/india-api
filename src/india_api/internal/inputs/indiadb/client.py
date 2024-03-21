@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from india_api import internal
 from india_api.internal.inputs.utils import get_window
+from india_api.internal.inputs.indiadb.smooth import smooth_forecast
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +66,9 @@ class Client(internal.DatabaseInterface):
             )
             for value in forecast_values
         ]
+
+        # smooth the forecasts
+        values = smooth_forecast(values)
 
         return values
 
