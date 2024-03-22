@@ -18,7 +18,7 @@ Download the latest image from github container regiimage from github container 
 $ docker run ghcr.io/openclimatefix/fake-api:latest
 ```
 
-### Using python
+### Using python(v3.11.x)
 
 Clone the repository,
 and create a new virtual environment with your favorite environment manager.
@@ -56,3 +56,18 @@ You can run the service with the command `india-api`.
 Changes will be hot-reloaded by the server.
 
 
+## Running Tests
+
+Make sure that you have ```pytest```
+and ```testcontainers``` installed.
+
+Then run the tests using
+```
+pytest
+```
+
+
+## Known Bugs
+
+There may be some issues when
+installing this with windows.
