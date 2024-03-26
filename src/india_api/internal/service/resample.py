@@ -16,6 +16,7 @@ def resample_generation(values: list[ActualPower], internal_minutes: int) -> lis
 
     # resample
     df = df.set_index("Time").resample(f"{internal_minutes}T").mean().dropna()
+    df.loc[df['PowerKW'] < 0, 'PowerKW'] = 0  # Set negative values of PowerKW up to 0
 
     # convert back to list of ActualPower
     return [
