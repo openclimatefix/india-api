@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "rahul-maurya11b",
+      "name": "Rahul Maurya",
+      "avatar_url": "https://avatars.githubusercontent.com/u/98907006?v=4",
+      "profile": "https://github.com/rahul-maurya11b",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "india-api",
+  "projectOwner": "openclimatefix"
+}
