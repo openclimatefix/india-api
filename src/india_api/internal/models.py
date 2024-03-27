@@ -38,23 +38,23 @@ class DatabaseInterface(abc.ABC):
     """Defines the interface for a generic database connection."""
 
     @abc.abstractmethod
-    def get_predicted_solar_yields_for_location(self, location: str) -> list[PredictedPower]:
-        """Returns a list of predicted solar yields for a given location."""
+    def get_predicted_solar_power_production_for_location(self, location: str) -> list[PredictedPower]:
+        """Returns a list of predicted solar power production for a given location."""
         pass
 
     @abc.abstractmethod
-    def get_actual_solar_yields_for_location(self, location: str) -> list[ActualPower]:
-        """Returns a list of actual solar yields for a given location."""
+    def get_actual_solar_power_production_for_location(self, location: str) -> list[ActualPower]:
+        """Returns a list of actual solar power production for a given location."""
         pass
 
     @abc.abstractmethod
-    def get_predicted_wind_yields_for_location(self, location: str) -> list[PredictedPower]:
-        """Returns a list of predicted wind yields for a given location."""
+    def get_predicted_wind_power_production_for_location(self, location: str) -> list[PredictedPower]:
+        """Returns a list of predicted wind power production for a given location."""
         pass
 
     @abc.abstractmethod
-    def get_actual_wind_yields_for_location(self, location: str) -> list[ActualPower]:
-        """Returns a list of actual wind yields for a given location."""
+    def get_actual_wind_power_production_for_location(self, location: str) -> list[ActualPower]:
+        """Returns a list of actual wind power production for a given location."""
         pass
 
     @abc.abstractmethod
