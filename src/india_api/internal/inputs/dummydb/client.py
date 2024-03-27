@@ -5,7 +5,7 @@ import random
 
 from india_api import internal
 
-from ._models import DummyDBPredictedYield
+from ._models import DummyDBPredictedPowerProduction
 from ..utils import get_window
 
 # step defines the time interval between each data point
@@ -15,14 +15,14 @@ step: dt.timedelta = dt.timedelta(minutes=15)
 class Client(internal.DatabaseInterface):
     """Defines a dummy database that conforms to the DatabaseInterface."""
 
-    def get_predicted_solar_yields_for_location(
+    def get_predicted_solar_power_production_for_location(
         self,
         location: str,
     ) -> list[internal.PredictedPower]:
-        """Gets the predicted solar yields for a location.
+        """Gets the predicted solar power production for a location.
 
         Args:
-            location: The location to get the predicted solar yields for.
+            location: The location to get the predicted solar power production for.
         """
         # Get the window
         start, end = get_window()
@@ -31,24 +31,24 @@ class Client(internal.DatabaseInterface):
 
         for i in range(numSteps):
             time = start + i * step
-            _yield = _basicSolarYieldFunc(int(time.timestamp()))
+            _PowerProduction = _basicSolarPowerProductionFunc(int(time.timestamp()))
             values.append(
                 internal.PredictedPower(
                     Time=time,
-                    PowerKW=int(_yield.YieldKW),
+                    PowerKW=int(_PowerProduction.PowerProductionKW),
                 ),
             )
 
         return values
 
-    def get_predicted_wind_yields_for_location(
+    def get_predicted_wind_power_production_for_location(
         self,
         location: str,
     ) -> list[internal.PredictedPower]:
-        """Gets the predicted wind yields for a location.
+        """Gets the predicted wind power production for a location.
 
         Args:
-            location: The location to get the predicted wind yields for.
+            location: The location to get the predicted wind power production for.
         """
         # Get the window
         start, end = get_window()
@@ -57,18 +57,18 @@ class Client(internal.DatabaseInterface):
 
         for i in range(numSteps):
             time = start + i * step
-            _yield = _basicWindYieldFunc(int(time.timestamp()))
+            _PowerProduction = _basicWindPowerProductionFunc(int(time.timestamp()))
             values.append(
                 internal.PredictedPower(
                     Time=time,
-                    PowerKW=int(_yield.YieldKW),
+                    PowerKW=int(_PowerProduction.PowerProductionKW),
                 ),
             )
 
         return values
 
-    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.ActualPower]:
-        """Gets the actual solar yields for a location."""
+    def get_actual_solar_power_production_for_location(self, location: str) -> list[internal.ActualPower]:
+        """Gets the actual solar power production for a location."""
         # Get the window
         start, end = get_window()
         numSteps = int((end - start) / step)
@@ -76,18 +76,18 @@ class Client(internal.DatabaseInterface):
 
         for i in range(numSteps):
             time = start + i * step
-            _yield = _basicSolarYieldFunc(int(time.timestamp()))
+            _PowerProduction = _basicSolarPowerProductionFunc(int(time.timestamp()))
             values.append(
                 internal.ActualPower(
                     Time=time,
-                    PowerKW=int(_yield.YieldKW),
+                    PowerKW=int(_PowerProduction.PowerProductionKW),
                 ),
             )
 
         return values
 
-    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.ActualPower]:
-        """Gets the actual wind yields for a location."""
+    def get_actual_wind_power_production_for_location(self, location: str) -> list[internal.ActualPower]:
+        """Gets the actual wind power production for a location."""
         # Get the window
         start, end = get_window()
         numSteps = int((end - start) / step)
@@ -95,11 +95,11 @@ class Client(internal.DatabaseInterface):
 
         for i in range(numSteps):
             time = start + i * step
-            _yield = _basicWindYieldFunc(int(time.timestamp()))
+            _PowerProduction = _basicWindPowerProductionFunc(int(time.timestamp()))
             values.append(
                 internal.ActualPower(
                     Time=time,
-                    PowerKW=int(_yield.YieldKW),
+                    PowerKW=int(_PowerProduction.PowerProductionKW),
                 ),
             )
 
@@ -114,17 +114,17 @@ class Client(internal.DatabaseInterface):
         return ["dummy_solar_region1", "dummy_solar_region2"]
 
 
-def _basicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedYield:
-    """Gets a fake solar yield for the input time.
+def _basicSolarPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedPowerProduction:
+    """Gets a fake solar PowerProduction for the input time.
 
-    The basic yield function is built from a sine wave
+    The basic PowerProduction function is built from a sine wave
     with a period of 24 hours, peaking at 12 hours.
     Further convolutions modify the value according to time of year.
 
     Args:
         timeUnix: The time in unix time.
         scaleFactor: The scale factor for the sine wave.
-            A scale factor of 10000 will result in a peak yield of 10 kW.
+            A scale factor of 10000 will result in a peak PowerProduction of 10 kW.
     """
     # Create a datetime object from the unix time
     time = dt.datetime.fromtimestamp(timeUnix, tz=dt.UTC)
@@ -166,15 +166,15 @@ def _basicSolarYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPred
         UncertaintyLow = output - (random.random() * output / 10)
         UncertaintyHigh = output + (random.random() * output / 10)
 
-    return DummyDBPredictedYield(
-        YieldKW=output,
+    return DummyDBPredictedPowerProduction(
+        PowerProductionKW=output,
         UncertaintyLow=UncertaintyLow,
         UncertaintyHigh=UncertaintyHigh,
     )
 
 
-def _basicWindYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedYield:
-    """Gets a fake wind yield for the input time."""
+def _basicWindPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedPowerProduction:
+    """Gets a fake wind PowerProduction for the input time."""
     output = min(scaleFactor, scaleFactor * 10 * random.random())
 
     UncertaintyLow: float = 0.0
@@ -183,8 +183,8 @@ def _basicWindYieldFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredi
         UncertaintyLow = output - (random.random() * output / 10)
         UncertaintyHigh = output + (random.random() * output / 10)
 
-    return DummyDBPredictedYield(
-        YieldKW=output,
+    return DummyDBPredictedPowerProduction(
+        PowerProductionKW=output,
         UncertaintyLow=UncertaintyLow,
         UncertaintyHigh=UncertaintyHigh,
     )

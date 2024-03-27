@@ -112,13 +112,13 @@ def get_historic_timeseries_route(
 
     try:
         if source == "wind":
-            values = db.get_actual_wind_yields_for_location(location=region)
+            values = db.get_actual_wind_power_production_for_location(location=region)
         elif source == "solar":
-            values = db.get_actual_solar_yields_for_location(location=region)
+            values = db.get_actual_solar_power_production_for_location(location=region)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting solar yields: {e}",
+            detail=f"Error getting solar power production: {e}",
         ) from e
 
     if resample_minutes is not None:
@@ -150,13 +150,13 @@ def get_forecast_timeseries_route(
 
     try:
         if source == "wind":
-            values = db.get_predicted_wind_yields_for_location(location=region)
+            values = db.get_predicted_wind_power_production_for_location(location=region)
         elif source == "solar":
-            values = db.get_predicted_solar_yields_for_location(location=region)
+            values = db.get_predicted_solar_power_production_for_location(location=region)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting yields: {e}",
+            detail=f"Error getting power production: {e}",
         ) from e
 
     return GetForecastGenerationResponse(

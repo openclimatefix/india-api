@@ -35,12 +35,12 @@ class Client(internal.DatabaseInterface):
         else:
             return self.session
 
-    def get_predicted_yields_for_location(
+    def get_predicted_power_production_for_location(
         self,
         location: str,
         asset_type: SiteAssetType,
     ) -> list[internal.PredictedPower]:
-        """Gets the predicted yields for a location."""
+        """Gets the predicted power production for a location."""
 
         # Get the window
         start, end = get_window()
@@ -77,7 +77,7 @@ class Client(internal.DatabaseInterface):
         location: str,
         asset_type: SiteAssetType,
     ) -> [internal.PredictedPower]:
-        """Gets the predicted yields for a location."""
+        """Gets the predicted power production for a location."""
 
         # Get the window
         start, end = get_window()
@@ -105,43 +105,43 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_predicted_solar_yields_for_location(
+    def get_predicted_solar_power_production_for_location(
         self,
         location: str,
     ) -> [internal.PredictedPower]:
         """
-        Gets the predicted solar yields for a location.
+        Gets the predicted solar power production for a location.
 
         Args:
-            location: The location to get the predicted solar yields for.
+            location: The location to get the predicted solar power production for.
         """
 
-        return self.get_predicted_yields_for_location(
+        return self.get_predicted_power_production_for_location(
             location=location, asset_type=SiteAssetType.pv
         )
 
-    def get_predicted_wind_yields_for_location(
+    def get_predicted_wind_power_production_for_location(
         self,
         location: str,
     ) -> list[internal.PredictedPower]:
         """
-        Gets the predicted wind yields for a location.
+        Gets the predicted wind power production for a location.
 
         Args:
-            location: The location to get the predicted wind yields for.
+            location: The location to get the predicted wind power production for.
         """
 
-        return self.get_predicted_yields_for_location(
+        return self.get_predicted_power_production_for_location(
             location=location, asset_type=SiteAssetType.wind
         )
 
-    def get_actual_solar_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
-        """Gets the actual solar yields for a location."""
+    def get_actual_solar_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+        """Gets the actual solar power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.pv)
 
-    def get_actual_wind_yields_for_location(self, location: str) -> list[internal.PredictedPower]:
-        """Gets the actual wind yields for a location."""
+    def get_actual_wind_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+        """Gets the actual wind power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.wind)
 

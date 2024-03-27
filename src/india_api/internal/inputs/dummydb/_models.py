@@ -2,9 +2,9 @@ import dataclasses as dc
 
 
 @dc.dataclass
-class DummyDBPredictedYield:
-    """Structure of the predicted yield data from the dummy database."""
+class DummyDBPredictedPowerProduction:
+    """Structure of the predicted Power Production data from the dummy database."""
 
-    YieldKW: float
+    PowerProductionKW: float
     UncertaintyLow: float
     UncertaintyHigh: float
