@@ -18,7 +18,7 @@ from india_api.internal.models import ActualPower
 from india_api.internal.service.resample import resample_generation
 
 log = logging.getLogger(__name__)
-version = "0.1.16"
+version = "0.1.17"
 
 
 local_tz = pytz.timezone("Asia/Kolkata")
