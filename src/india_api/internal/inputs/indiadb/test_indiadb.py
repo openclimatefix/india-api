@@ -18,33 +18,33 @@ def client(engine, db_session):
 
 
 class TestIndiaDBClient:
-    def test_get_predicted_wind_yields_for_location(self, client, forecast_values) -> None:
+    def test_get_predicted_wind_power_production_for_location(self, client, forecast_values) -> None:
         locID = "testID"
-        result = client.get_predicted_wind_yields_for_location(locID)
+        result = client.get_predicted_wind_power_production_for_location(locID)
 
         assert len(result) == 110
         for record in result:
             assert isinstance(record, PredictedPower)
 
-    def test_get_predicted_solar_yields_for_location(self, client, forecast_values) -> None:
+    def test_get_predicted_solar_power_production_for_location(self, client, forecast_values) -> None:
         locID = "testID"
-        result = client.get_predicted_solar_yields_for_location(locID)
+        result = client.get_predicted_solar_power_production_for_location(locID)
 
         assert len(result) == 110
         for record in result:
             assert isinstance(record, PredictedPower)
 
-    def test_get_actual_wind_yields_for_location(self, client, generations) -> None:
+    def test_get_actual_wind_power_production_for_location(self, client, generations) -> None:
         locID = "testID"
-        result = client.get_actual_wind_yields_for_location(locID)
+        result = client.get_actual_wind_power_production_for_location(locID)
 
         assert len(result) == 10
         for record in result:
             assert isinstance(record, ActualPower)
 
-    def test_get_actual_solar_yields_for_location(self, client, generations) -> None:
+    def test_get_actual_solar_power_production_for_location(self, client, generations) -> None:
         locID = "testID"
-        result = client.get_actual_solar_yields_for_location(locID)
+        result = client.get_actual_solar_power_production_for_location(locID)
 
         assert len(result) == 10
         for record in result:
