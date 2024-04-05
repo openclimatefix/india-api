@@ -12,8 +12,9 @@ def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
         }
     )
 
-    # smooth
-    df = df.set_index("Time").rolling(4, min_periods=1).mean()
+    # smooth and make sure it is symmetrical
+    df = df.set_index("Time")
+    df = df[0].rolling(4, min_periods=1, center=True, closed='both').mean()
 
     # convert to ints
     df["PowerKW"] = df["PowerKW"].astype(int)
