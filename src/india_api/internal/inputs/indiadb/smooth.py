@@ -19,9 +19,6 @@ def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
     # convert to ints
     df["PowerKW"] = df["PowerKW"].astype(int)
 
-    # convert to ints
-    df["PowerKW"] = df["PowerKW"].astype(int)
-
     # convert back to list of PredictedPower
     return [
         PredictedPower(
