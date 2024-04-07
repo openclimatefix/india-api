@@ -26,10 +26,10 @@ conf = ConnectionConfig(
     MAIL_PORT=Envs.MAIL_PORT,
     MAIL_SERVER=Envs.MAIL_SERVER,
     MAIL_FROM_NAME=Envs.MAIL_FROM_NAME,
-    MAIL_TLS=True,
-    MAIL_SSL=False,
+    MAIL_SSL_TLS=True,
+    MAIL_STARTTLS=True,
     USE_CREDENTIALS=True,
-    TEMPLATE_FOLDER="../templates/email",
+    # TEMPLATE_FOLDER="../templates/email",
 )
 
 
@@ -45,7 +45,7 @@ async def send_email_async(subject: str, email_to: str, body: dict, attachment=N
         message.attachment = attachment
 
     fm = FastMail(conf)
-    await fm.send_message(message, template_name="email.html", app=server)
+    await fm.send_message(message)
 
 
 # not used in the current implementation, but it could be useful if we want to offload the
@@ -69,5 +69,5 @@ def send_email_background(
 
     fm = FastMail(conf)
     background_tasks.add_task(
-        fm.send_message, message, template_name="email.html", app=server
+        fm.send_message, message
     )
