@@ -22,6 +22,7 @@ dependencies = [
     "pytz >= 2023.3",
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
+    "geopandas >= 0.14.2",
 ]
 
 [project.optional-dependencies]
