@@ -110,6 +110,8 @@ def get_historic_timeseries_route(
     """Function for the historic generation route."""
     values: list[ActualPower] = []
 
+    db.save_api_call_to_db(url=f"/{source}/{region}/generation", user=None)
+
     try:
         if source == "wind":
             values = db.get_actual_wind_power_production_for_location(location=region)
@@ -148,6 +150,8 @@ def get_forecast_timeseries_route(
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
 
+    db.save_api_call_to_db(url=f"/{source}/{region}/forecast", user=None)
+
     try:
         if source == "wind":
             values = db.get_predicted_wind_power_production_for_location(location=region)
@@ -175,8 +179,11 @@ class GetSourcesResponse(BaseModel):
     tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
-def get_sources_route() -> GetSourcesResponse:
+def get_sources_route(db: DBClientDependency) -> GetSourcesResponse:
     """Function for the sources route."""
+
+    db.save_api_call_to_db(url="/sources/", user=None)
+
     return GetSourcesResponse(sources=["wind", "solar"])
 
 
@@ -196,6 +203,9 @@ def get_regions_route(
     db: DBClientDependency,
 ) -> GetRegionsResponse:
     """Function for the regions route."""
+
+    db.save_api_call_to_db(url=f"/{source}/regions", user=None)
+
     if source == "wind":
         regions = db.get_wind_regions()
     elif source == "solar":

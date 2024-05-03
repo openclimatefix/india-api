@@ -9,6 +9,7 @@ from pvsite_datamodel.read import (
     get_pv_generation_by_sites,
 )
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
+from pvsite_datamodel.write.database import save_api_call_to_db
 from sqlalchemy.orm import Session
 
 from india_api import internal
@@ -34,6 +35,13 @@ class Client(internal.DatabaseInterface):
             return self.connection.get_session()
         else:
             return self.session
+
+    def save_api_call_to_db(self, url: str, user=None):
+        """Saves an API call to the database."""
+        with self._get_session() as session:
+            # save the API call
+            log.info(f"Saving API call ({url=}) to database")
+            save_api_call_to_db(url=url, session=session, user=user)
 
     def get_predicted_power_production_for_location(
         self,
@@ -62,8 +70,10 @@ class Client(internal.DatabaseInterface):
         # convert ForecastValueSQL to PredictedPower
         values = [
             internal.PredictedPower(
-                PowerKW=int(value.forecast_power_kw) if value.forecast_power_kw >= 0 else 0,  #Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC)
+                PowerKW=int(value.forecast_power_kw)
+                if value.forecast_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.astimezone(dt.UTC),
             )
             for value in forecast_values
         ]
@@ -99,8 +109,10 @@ class Client(internal.DatabaseInterface):
         # convert from GenerationSQL to PredictedPower
         values = [
             internal.ActualPower(
-                PowerKW=int(value.generation_power_kw) if value.generation_power_kw >= 0 else 0,  #Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC)
+                PowerKW=int(value.generation_power_kw)
+                if value.generation_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.astimezone(dt.UTC),
             )
             for value in values
         ]
@@ -137,12 +149,16 @@ class Client(internal.DatabaseInterface):
             location=location, asset_type=SiteAssetType.wind
         )
 
-    def get_actual_solar_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_solar_power_production_for_location(
+        self, location: str
+    ) -> list[internal.PredictedPower]:
         """Gets the actual solar power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.pv)
 
-    def get_actual_wind_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_wind_power_production_for_location(
+        self, location: str
+    ) -> list[internal.PredictedPower]:
         """Gets the actual wind power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.wind)

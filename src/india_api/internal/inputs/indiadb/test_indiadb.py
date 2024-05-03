@@ -3,6 +3,8 @@ import pytest
 
 from india_api.internal import PredictedPower, ActualPower
 
+from pvsite_datamodel.sqlmodels import APIRequestSQL
+
 from .client import Client
 
 log = logging.getLogger(__name__)
@@ -18,7 +20,9 @@ def client(engine, db_session):
 
 
 class TestIndiaDBClient:
-    def test_get_predicted_wind_power_production_for_location(self, client, forecast_values) -> None:
+    def test_get_predicted_wind_power_production_for_location(
+        self, client, forecast_values
+    ) -> None:
         locID = "testID"
         result = client.get_predicted_wind_power_production_for_location(locID)
 
@@ -26,7 +30,9 @@ class TestIndiaDBClient:
         for record in result:
             assert isinstance(record, PredictedPower)
 
-    def test_get_predicted_solar_power_production_for_location(self, client, forecast_values) -> None:
+    def test_get_predicted_solar_power_production_for_location(
+        self, client, forecast_values
+    ) -> None:
         locID = "testID"
         result = client.get_predicted_solar_power_production_for_location(locID)
 
