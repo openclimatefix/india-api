@@ -70,8 +70,10 @@ class Client(internal.DatabaseInterface):
         # convert ForecastValueSQL to PredictedPower
         values = [
             internal.PredictedPower(
-                PowerKW=int(value.forecast_power_kw) if value.forecast_power_kw >= 0 else 0,  #Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC)
+                PowerKW=int(value.forecast_power_kw)
+                if value.forecast_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.astimezone(dt.UTC),
             )
             for value in forecast_values
         ]
@@ -107,8 +109,10 @@ class Client(internal.DatabaseInterface):
         # convert from GenerationSQL to PredictedPower
         values = [
             internal.ActualPower(
-                PowerKW=int(value.generation_power_kw) if value.generation_power_kw >= 0 else 0,  #Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC)
+                PowerKW=int(value.generation_power_kw)
+                if value.generation_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.astimezone(dt.UTC),
             )
             for value in values
         ]
@@ -145,12 +149,16 @@ class Client(internal.DatabaseInterface):
             location=location, asset_type=SiteAssetType.wind
         )
 
-    def get_actual_solar_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_solar_power_production_for_location(
+        self, location: str
+    ) -> list[internal.PredictedPower]:
         """Gets the actual solar power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.pv)
 
-    def get_actual_wind_power_production_for_location(self, location: str) -> list[internal.PredictedPower]:
+    def get_actual_wind_power_production_for_location(
+        self, location: str
+    ) -> list[internal.PredictedPower]:
         """Gets the actual wind power production for a location."""
 
         return self.get_generation_for_location(location=location, asset_type=SiteAssetType.wind)

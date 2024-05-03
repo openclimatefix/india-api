@@ -38,7 +38,9 @@ class DatabaseInterface(abc.ABC):
     """Defines the interface for a generic database connection."""
 
     @abc.abstractmethod
-    def get_predicted_solar_power_production_for_location(self, location: str) -> list[PredictedPower]:
+    def get_predicted_solar_power_production_for_location(
+        self, location: str
+    ) -> list[PredictedPower]:
         """Returns a list of predicted solar power production for a given location."""
         pass
 
@@ -48,7 +50,9 @@ class DatabaseInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_predicted_wind_power_production_for_location(self, location: str) -> list[PredictedPower]:
+    def get_predicted_wind_power_production_for_location(
+        self, location: str
+    ) -> list[PredictedPower]:
         """Returns a list of predicted wind power production for a given location."""
         pass
 
