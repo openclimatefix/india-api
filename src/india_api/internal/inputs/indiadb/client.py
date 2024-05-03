@@ -9,6 +9,7 @@ from pvsite_datamodel.read import (
     get_pv_generation_by_sites,
 )
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
+from pvsite_datamodel.write.database import save_api_call_to_db
 from sqlalchemy.orm import Session
 
 from india_api import internal
@@ -34,6 +35,13 @@ class Client(internal.DatabaseInterface):
             return self.connection.get_session()
         else:
             return self.session
+
+    def save_api_call_to_db(self, url: str, user=None):
+        """Saves an API call to the database."""
+        with self._get_session() as session:
+            # save the API call
+            log.info(f"Saving API call ({url=}) to database")
+            save_api_call_to_db(url=url, session=session, user=user)
 
     def get_predicted_power_production_for_location(
         self,

@@ -66,3 +66,8 @@ class DatabaseInterface(abc.ABC):
     def get_solar_regions(self) -> list[str]:
         """Returns a list of solar regions."""
         pass
+
+    @abc.abstractmethod
+    def save_api_call_to_db(self, url: str, user=None):
+        """Saves an API call to the database."""
+        pass
