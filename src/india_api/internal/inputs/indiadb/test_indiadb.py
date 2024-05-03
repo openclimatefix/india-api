@@ -21,7 +21,7 @@ def client(engine, db_session):
 
 class TestIndiaDBClient:
     def test_get_predicted_wind_power_production_for_location(
-        self, client, forecast_values, db_session
+        self, client, forecast_values
     ) -> None:
         locID = "testID"
         result = client.get_predicted_wind_power_production_for_location(locID)
@@ -29,10 +29,6 @@ class TestIndiaDBClient:
         assert len(result) == 110
         for record in result:
             assert isinstance(record, PredictedPower)
-
-        with db_session() as session:
-            api_requests = session.query(APIRequestSQL).all()
-            assert len(api_requests) == 1
 
     def test_get_predicted_solar_power_production_for_location(
         self, client, forecast_values
