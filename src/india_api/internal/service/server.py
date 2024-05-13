@@ -120,7 +120,7 @@ def get_historic_timeseries_route(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting solar power production: {e}",
+            detail=f"Error getting {source} power production: {e}",
         ) from e
 
     if resample_minutes is not None:
@@ -160,7 +160,7 @@ def get_forecast_timeseries_route(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting power production: {e}",
+            detail=f"Error getting {source} power production: {e}",
         ) from e
 
     return GetForecastGenerationResponse(
