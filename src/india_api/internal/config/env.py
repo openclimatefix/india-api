@@ -1,7 +1,7 @@
 """Config struct for application running."""
 import os
 from distutils.util import strtobool
-from typing import Literal, get_type_hints
+from typing import get_type_hints
 
 import structlog
 
@@ -56,6 +56,13 @@ class EnvParser:
 class Config(EnvParser):
     """Config for the application."""
 
-    SOURCE: str = "indiadb"
+    SOURCE: str = "dummydb"
     DB_URL: str = ""
     PORT: int = 8000
+    AUTH0_BASE_URL: str = ""
+    AUTH0_AUDIENCE: str = ""
+    AUTH0_CLIENT_ID: str = ""
+    AUTH0_CLIENT_SECRET: str = ""
+    AUTH0_DOMAIN: str = ""
+    AUTH0_API_AUDIENCE: str = ""
+    AUTH0_RULE_NAMESPACE: str = "https://openclimatefix.org"

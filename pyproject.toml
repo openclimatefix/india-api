@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 # Metadata (see https://peps.python.org/pep-0621/)
 [project]
 name = "india-api"
-dynamic = ["version"] # Set automtically using git: https://setuptools-git-versioning.readthedocs.io/en/stable/
+dynamic = ["version"] # Set automatically using git: https://setuptools-git-versioning.readthedocs.io/en/stable/
 description = "India API for wind and solar data"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11.0"
@@ -18,11 +18,13 @@ authors = [
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
     "fastapi >= 0.105.0",
+    "fastapi_auth0 >= 0.5.0",
+    "geopandas >= 0.14.2",
     "pvsite-datamodel >= 1.0.22",
+    "pyjwt >= 2.8.0",
     "pytz >= 2023.3",
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
-    "geopandas >= 0.14.2",
 ]
 
 [project.optional-dependencies]
