@@ -6,7 +6,7 @@ import pytz
 import logging
 from typing import Annotated, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -16,6 +16,7 @@ from india_api.internal import (
 )
 from india_api.internal.models import ActualPower
 from india_api.internal.service.resample import resample_generation
+from india_api.internal.service.email_service import send_email_async, generate_csv_data
 
 log = logging.getLogger(__name__)
 version = "0.1.21"
@@ -68,10 +69,36 @@ route_tags = [
         "name": "API Information",
         "description": "Routes pertaining to the usage and status of the API.",
     },
+    {
+        "name": "Email",
+        "description": "Routes for sending emails.",
+    },
 ]
 
 
 # === API ROUTES ==============================================================
+
+class SendCSVEmailResponse(BaseModel):
+    """Model for the send CSV email endpoint response."""
+
+    message: str
+
+@server.get("/send-csv-email", tags=["Email"], status_code=status.HTTP_200_OK)
+async def send_csv_email() -> SendCSVEmailResponse:
+    csv_data = generate_csv_data()
+    attachment = {"filename": "data.csv", "content": csv_data.encode("utf-8")}
+
+    email_body = {
+        "title": "CSV Email",
+        "name": "Aryan Bhosale",
+        "message": "Please find attached CSV",
+    }
+
+    await send_email_async(
+        "CSV Email", "aryan.bhosale1719@gmail.com", email_body, attachment
+    )
+
+    return SendCSVEmailResponse(message="CSV email sent successfully")
 
 
 class GetHealthResponse(BaseModel):
@@ -127,7 +154,11 @@ def get_historic_timeseries_route(
         values = resample_generation(values=values, internal_minutes=resample_minutes)
 
     return GetHistoricGenerationResponse(
-        values=[y.to_timezone(tz=local_tz) for y in values if y.Time < dt.datetime.now(tz=dt.UTC)],
+        values=[
+            y.to_timezone(tz=local_tz)
+            for y in values
+            if y.Time < dt.datetime.now(tz=dt.UTC)
+        ],
     )
 
 
@@ -154,9 +185,13 @@ def get_forecast_timeseries_route(
 
     try:
         if source == "wind":
-            values = db.get_predicted_wind_power_production_for_location(location=region)
+            values = db.get_predicted_wind_power_production_for_location(
+                location=region
+            )
         elif source == "solar":
-            values = db.get_predicted_solar_power_production_for_location(location=region)
+            values = db.get_predicted_solar_power_production_for_location(
+                location=region
+            )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -1,5 +1,7 @@
 """The main entrypoint to the application."""
 
+import csv
+from io import StringIO
 import uvicorn
 
 from india_api import internal
@@ -25,6 +27,21 @@ match cfg.SOURCE:
 
 # Dependency inject the desired database client
 server.dependency_overrides[get_db_client] = get_db_client_override
+
+# Function to generate example CSV data
+def generate_csv_data():
+    rows = [
+        {'Name': 'John', 'Age': 30, 'City': 'New York'},
+        {'Name': 'Alice', 'Age': 25, 'City': 'Los Angeles'},
+        {'Name': 'Bob', 'Age': 35, 'City': 'Chicago'}
+    ]
+
+    csv_data = StringIO()
+    csv_writer = csv.DictWriter(csv_data, fieldnames=rows[0].keys())
+    csv_writer.writeheader()
+    csv_writer.writerows(rows)
+
+    return csv_data.getvalue()
 
 
 def run() -> None:
