@@ -1,60 +1,39 @@
-""" Authentication  objects """
+import jwt
+from fastapi import Depends, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-import os
-
-import structlog
-from fastapi_auth0 import Auth0
-
-logger = structlog.stdlib.get_logger()
+token_auth_scheme = HTTPBearer()
 
 
-def get_auth():
-    """Make Auth0 object
+class Auth:
+    """Fast api dependency that validates an JWT token."""
 
-    If AUTH0_DOMAIN or AUTH0_API_AUDIENCE has been set, None is returned.
-    This is useful for testing
-    """
+    def __init__(self, domain: str, api_audience: str, algorithm: str):
+        self._domain = domain
+        self._api_audience = api_audience
+        self._algorithm = algorithm
 
-    domain = os.getenv("AUTH0_DOMAIN", "not-set")
-    api_audience = os.getenv("AUTH0_API_AUDIENCE", "not-set")
+        self._jwks_client = jwt.PyJWKClient(f"https://{domain}/.well-known/jwks.json")
 
-    logger.debug(f"The auth0 domain {domain}")
-    logger.debug(f"The auth0 api audience {api_audience}")
+    def __call__(self, request: Request, auth_credentials: HTTPAuthorizationCredentials = Depends(token_auth_scheme)):
+        token = auth_credentials.credentials
 
-    if (domain == "not-set") or (api_audience == "not-set"):
-        logger.warning('"AUTH0_DOMAIN" and "AUTH0_API_AUDIENCE" need to be set ')
-        return None
-    return Auth0(
-        domain=domain,
-        api_audience=api_audience,
-    )
+        try:
+            signing_key = self._jwks_client.get_signing_key_from_jwt(token).key
+        except (jwt.exceptions.PyJWKClientError, jwt.exceptions.DecodeError) as e:
+            raise HTTPException(status_code=401, detail=str(e))
 
+        try:
+            payload = jwt.decode(
+                token,
+                signing_key,
+                algorithms=self._algorithm,
+                audience=self._api_audience,
+                issuer=f"https://{self._domain}/",
+            )
+        except Exception as e:
+            raise HTTPException(status_code=401, detail=str(e))
 
-# only need to do this once
-auth = get_auth()
+        request.state.auth = payload
 
-
-def get_auth_implicit_scheme():
-    """Get authentical implicit scheme - this can be mocked in tests
-
-    If AUTH0_DOMAIN or AUTH0_API_AUDIENCE has been set, a empty None is returned.
-    This is useful for testing
-    """
-
-    if auth is None:
-        return lambda: None
-
-    return auth.implicit_scheme
-
-
-def get_user():
-    """Get user used for authentication - this function can be mocked for tests
-
-    If AUTH0_DOMAIN or AUTH0_API_AUDIENCE has been set, a empty None is returned.
-    This is useful for testing
-    """
-
-    if auth is None:
-        return lambda: None
-
-    return auth.get_user
+        return payload

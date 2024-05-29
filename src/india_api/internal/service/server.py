@@ -3,18 +3,13 @@
 import os
 import datetime as dt
 import sys
-import time
-import jwt
 
 import pytz
 import logging
-from typing import Annotated, Optional, Callable
+from typing import Annotated, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status, Security, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
-from fastapi.routing import APIRoute, APIRouter
-from fastapi_auth0 import Auth0User, Auth0
 from pydantic import BaseModel
 
 from india_api.internal import (
@@ -22,7 +17,7 @@ from india_api.internal import (
     PredictedPower,
 )
 from india_api.internal.models import ActualPower
-from india_api.internal.service.auth import get_auth_implicit_scheme, get_user
+from india_api.internal.service.auth import Auth
 from india_api.internal.service.resample import resample_generation
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
@@ -31,9 +26,13 @@ version = "0.1.21"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
-auth = Auth0(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'))
-# TODO: scopes for granular access across APIs
-# auth = Auth0(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
+auth = Auth(
+    domain=os.getenv("AUTH0_DOMAIN"),
+    api_audience=os.getenv("AUTH0_API_AUDIENCE"),
+    algorithm='RS256',
+)
+# TODO: add scopes for granular access across APIs
+# auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
 
 title = "India API"
 description = "API providing OCF Forecast for India"
@@ -51,46 +50,26 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
+# Add auth with middleware
+@server.middleware('http')
+async def save_api_request_to_db(request: Request,  call_next):
+    """Middleware to save the API request to the database."""
+    response = await call_next(request)
+    log.info("Request: %s", request.headers.items())
 
-class User(BaseModel):
-    id: str
-    email: Optional[str] = None
+    email = None
+    # Check if the request has an auth object to avoid error
+    if hasattr(request.state, 'auth'):
+        auth = getattr(request.state, 'auth')
+        email = auth.get("https://openclimatefix.org/email")
 
+    # TODO: store the referer in the DB
+    log.info("Referer: %s", request.headers.get("referer"))
+    log.info("Email: %s", email)
+    db = server.dependency_overrides[get_db_client]()
+    db.save_api_call_to_db(url=request.url.path, email=email)
 
-class LoggedRoute(APIRoute):
-    def get_route_handler(self) -> Callable:
-        original_route_handler = super().get_route_handler()
-
-        async def custom_route_handler(request: Request) -> Response:
-            token = request.headers.get("Authorization")
-            user = None
-            log.info("token: %s", token)
-            if token:
-                token = token.split(" ")[1]
-                try:
-                    decoded_user = jwt.decode(token, options={"verify_signature": False})
-                    user_id = decoded_user.get("sub")
-                    user_email = decoded_user.get("https://openclimatefix.org/email")
-                    user = User(id=user_id, email=user_email)
-                finally:
-                    log.info("Failed to decode token")
-            # TODO: We could log referer instead of any UI flags etc.
-            log.info("Referer: %s", request.headers.get("referer"))
-            db = server.dependency_overrides[get_db_client]()
-            db.save_api_call_to_db(url=request.url.path, user=user)
-            # Similarly we could log the process time
-            start_time = time.time()
-            response = await original_route_handler(request)
-            process_time = str(time.time() - start_time)
-            log.info(f"Process Time {process_time} {request.url}s")
-            response.headers["X-Process-Time"] = process_time
-            return response
-
-        return custom_route_handler
-
-
-router = APIRouter(route_class=LoggedRoute)
-
+    return response
 
 def get_db_client() -> DatabaseInterface:
     """Dependency injection for the database client."""
@@ -156,10 +135,11 @@ class GetHistoricGenerationResponse(BaseModel):
 )
 def get_historic_timeseries_route(
         source: ValidSourceDependency,
+        request: Request,
         region: str,
         db: DBClientDependency,
-        user: Auth0User = Security(get_user()),
-        # TODO: user: Auth0User = Security(get_user(), scopes=["read:india"]),
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
         resample_minutes: Optional[int] = None,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
@@ -199,8 +179,8 @@ def get_forecast_timeseries_route(
         source: ValidSourceDependency,
         region: str,
         db: DBClientDependency,
-        user: Auth0User = Security(get_user()),
-        # user: Auth0User = Security(get_user(), scopes=["read:india"]),
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
@@ -232,7 +212,7 @@ class GetSourcesResponse(BaseModel):
     tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
-def get_sources_route(user: Auth0User = Security(get_user())) -> GetSourcesResponse:
+def get_sources_route(auth: dict = Depends(auth)) -> GetSourcesResponse:
     """Function for the sources route."""
 
     return GetSourcesResponse(sources=["wind", "solar"])
@@ -244,7 +224,7 @@ class GetRegionsResponse(BaseModel):
     regions: list[str]
 
 
-@router.get(
+@server.get(
     "/{source}/regions",
     tags=["API Information"],
     status_code=status.HTTP_200_OK,
@@ -252,8 +232,8 @@ class GetRegionsResponse(BaseModel):
 def get_regions_route(
         source: ValidSourceDependency,
         db: DBClientDependency,
-        user: Auth0User = Security(get_user()),
-        # user: Auth0User = Security(get_user(), scopes=["read:india"]),
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
 ) -> GetRegionsResponse:
     """Function for the regions route."""
 
@@ -262,63 +242,3 @@ def get_regions_route(
     elif source == "solar":
         regions = db.get_solar_regions()
     return GetRegionsResponse(regions=regions)
-
-
-# TODO: won't actually need this now if we go with the custom router logging approach with `Referer` stored in DB
-# OpenAPI custom theme to allow for UI flag
-def custom_openapi():
-    """Make custom openapi schema."""
-    if server.openapi_schema:
-        return server.openapi_schema
-    openapi_schema = get_openapi(
-        title="Quartz Energy API",
-        version=version,
-        description=description,
-        contact={
-            "name": "Quartz Energy by Open Climate Fix",
-            "url": "https://openclimatefix.org",
-            "email": "info@openclimatefix.org",
-        },
-        license_info={
-            "name": "MIT License",
-            "url": "https://github.com/openclimatefix/india-api/blob/main/LICENSE",
-        },
-        routes=server.routes,
-    )
-    # Define the global query parameter for UI flag
-    global_query_parameter = {
-        "name": "ui",
-        "in": "query",
-        "required": False,
-        "schema": {
-            "type": "string",
-            "show_in_schema": False,
-        },
-        "show_in_schema": False,  # Don't show this in the schema
-        "description": 'A common, optional "ui" query parameter for all endpoints.',
-    }
-    # Add the query parameter to all paths
-    for path in openapi_schema["paths"].values():
-        for method in path.values():
-            if "parameters" in method:
-                method["parameters"].append(global_query_parameter)
-            else:
-                method["parameters"] = [global_query_parameter]
-
-    # Create a new schema without the 'ui' parameter for Swagger UI
-    swagger_schema = openapi_schema
-
-    # Manually copy the parameters except 'ui' from openapi_schema to swagger_schema
-    for path, path_item in openapi_schema["paths"].items():
-        for method, operation in path_item.items():
-            if "parameters" in operation:
-                swagger_schema["paths"][path][method]["parameters"] = [
-                    param for param in operation["parameters"] if param["name"] != "ui"
-                ]
-
-    server.openapi_schema = swagger_schema
-    return server.openapi_schema
-
-
-server.openapi = custom_openapi
-server.include_router(router)

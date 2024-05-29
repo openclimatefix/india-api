@@ -56,13 +56,8 @@ class EnvParser:
 class Config(EnvParser):
     """Config for the application."""
 
-    SOURCE: str = "dummydb"
+    SOURCE: str = "indiadb"
     DB_URL: str = ""
     PORT: int = 8000
-    AUTH0_BASE_URL: str = ""
-    AUTH0_AUDIENCE: str = ""
-    AUTH0_CLIENT_ID: str = ""
-    AUTH0_CLIENT_SECRET: str = ""
     AUTH0_DOMAIN: str = ""
-    AUTH0_API_AUDIENCE: str = ""
-    AUTH0_RULE_NAMESPACE: str = "https://openclimatefix.org"
+    AUTH0_AUDIENCE: str = ""
