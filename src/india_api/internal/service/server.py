@@ -22,7 +22,7 @@ from india_api.internal.service.resample import resample_generation
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.21"
+version = "0.1.22"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
