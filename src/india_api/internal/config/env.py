@@ -60,4 +60,4 @@ class Config(EnvParser):
     DB_URL: str = ""
     PORT: int = 8000
     AUTH0_DOMAIN: str = ""
-    AUTH0_AUDIENCE: str = ""
+    AUTH0_API_AUDIENCE: str = ""
