@@ -50,7 +50,6 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
-# Add auth with middleware
 @server.middleware('http')
 async def save_api_request_to_db(request: Request,  call_next):
     """Middleware to save the API request to the database."""
