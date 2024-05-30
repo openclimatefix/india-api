@@ -2,11 +2,13 @@
 
 import os
 import datetime as dt
+import sys
+
 import pytz
 import logging
 from typing import Annotated, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -15,18 +17,29 @@ from india_api.internal import (
     PredictedPower,
 )
 from india_api.internal.models import ActualPower
+from india_api.internal.service.auth import Auth
 from india_api.internal.service.resample import resample_generation
 
+logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
 version = "0.1.21"
 
-
 local_tz = pytz.timezone("Asia/Kolkata")
 
+auth = Auth(
+    domain=os.getenv("AUTH0_DOMAIN"),
+    api_audience=os.getenv("AUTH0_API_AUDIENCE"),
+    algorithm='RS256',
+)
+# TODO: add scopes for granular access across APIs
+# auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
+
+title = "India API"
+description = "API providing OCF Forecast for India"
 server = FastAPI(
     version=version,
-    title="India API",
-    description="API providing OCF Forecast for India",
+    title=title,
+    description=description,
 )
 origins = os.getenv("ORIGINS", "*").split(",")
 server.add_middleware(
@@ -37,6 +50,27 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
+@server.middleware('http')
+async def save_api_request_to_db(request: Request,  call_next):
+    """Middleware to save the API request to the database."""
+    response = await call_next(request)
+
+    # Skip any OPTIONS requests
+    if request.method == "OPTIONS":
+        return response
+
+    email = None
+    # Check if the request has an auth object to avoid error
+    if hasattr(request.state, 'auth'):
+        auth = getattr(request.state, 'auth')
+        email = auth.get("https://openclimatefix.org/email")
+
+    # TODO: store the referer in the DB
+    log.info("Referer: %s", request.headers.get("referer"))
+    db = server.dependency_overrides[get_db_client]()
+    db.save_api_call_to_db(url=request.url.path, email=email)
+
+    return response
 
 def get_db_client() -> DatabaseInterface:
     """Dependency injection for the database client."""
@@ -57,7 +91,6 @@ def validate_source(source: str) -> str:
 
 
 ValidSourceDependency = Annotated[str, Depends(validate_source)]
-
 
 route_tags = [
     {
@@ -102,15 +135,16 @@ class GetHistoricGenerationResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_historic_timeseries_route(
-    source: ValidSourceDependency,
-    region: str,
-    db: DBClientDependency,
-    resample_minutes: Optional[int] = None,
+        source: ValidSourceDependency,
+        request: Request,
+        region: str,
+        db: DBClientDependency,
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
+        resample_minutes: Optional[int] = None,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
     values: list[ActualPower] = []
-
-    db.save_api_call_to_db(url=f"/{source}/{region}/generation", user=None)
 
     try:
         if source == "wind":
@@ -143,14 +177,14 @@ class GetForecastGenerationResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_forecast_timeseries_route(
-    source: ValidSourceDependency,
-    region: str,
-    db: DBClientDependency,
+        source: ValidSourceDependency,
+        region: str,
+        db: DBClientDependency,
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
-
-    db.save_api_call_to_db(url=f"/{source}/{region}/forecast", user=None)
 
     try:
         if source == "wind":
@@ -179,10 +213,8 @@ class GetSourcesResponse(BaseModel):
     tags=["API Information"],
     status_code=status.HTTP_200_OK,
 )
-def get_sources_route(db: DBClientDependency) -> GetSourcesResponse:
+def get_sources_route(auth: dict = Depends(auth)) -> GetSourcesResponse:
     """Function for the sources route."""
-
-    db.save_api_call_to_db(url="/sources/", user=None)
 
     return GetSourcesResponse(sources=["wind", "solar"])
 
@@ -199,12 +231,12 @@ class GetRegionsResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_regions_route(
-    source: ValidSourceDependency,
-    db: DBClientDependency,
+        source: ValidSourceDependency,
+        db: DBClientDependency,
+        auth: dict = Depends(auth),
+        # TODO: add auth scopes
 ) -> GetRegionsResponse:
     """Function for the regions route."""
-
-    db.save_api_call_to_db(url=f"/{source}/regions", user=None)
 
     if source == "wind":
         regions = db.get_wind_regions()

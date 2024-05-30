@@ -1,7 +1,7 @@
 """Config struct for application running."""
 import os
 from distutils.util import strtobool
-from typing import Literal, get_type_hints
+from typing import get_type_hints
 
 import structlog
 
@@ -59,3 +59,5 @@ class Config(EnvParser):
     SOURCE: str = "indiadb"
     DB_URL: str = ""
     PORT: int = 8000
+    AUTH0_DOMAIN: str = ""
+    AUTH0_AUDIENCE: str = ""

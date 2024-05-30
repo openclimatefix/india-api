@@ -7,6 +7,7 @@ from pvsite_datamodel.read import (
     get_sites_by_country,
     get_latest_forecast_values_by_site,
     get_pv_generation_by_sites,
+    get_user_by_email,
 )
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
 from pvsite_datamodel.write.database import save_api_call_to_db
@@ -36,11 +37,12 @@ class Client(internal.DatabaseInterface):
         else:
             return self.session
 
-    def save_api_call_to_db(self, url: str, user=None):
+    def save_api_call_to_db(self, url: str, email=""):
         """Saves an API call to the database."""
         with self._get_session() as session:
             # save the API call
             log.info(f"Saving API call ({url=}) to database")
+            user = get_user_by_email(session, email)
             save_api_call_to_db(url=url, session=session, user=user)
 
     def get_predicted_power_production_for_location(

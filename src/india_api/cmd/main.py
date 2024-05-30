@@ -11,7 +11,7 @@ cfg = Config()
 
 match cfg.SOURCE:
     case "indiadb":
-        if cfg.DB_URL == "" or cfg.DB_URL == None:
+        if cfg.DB_URL == "" or cfg.DB_URL is None:
             raise OSError(f"DB_URL env var is required using db source: {cfg.SOURCE}")
 
         def get_db_client_override() -> internal.DatabaseInterface:
@@ -30,10 +30,10 @@ server.dependency_overrides[get_db_client] = get_db_client_override
 def run() -> None:
     """Run the API using a uvicorn server."""
     uvicorn.run(
-        server,
+        "india_api.internal.service.server:server",
         host="0.0.0.0",
         port=cfg.PORT,
-        reload=False,
+        reload=True,
         log_level="debug",
         workers=1,
     )
