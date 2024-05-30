@@ -55,7 +55,10 @@ server.add_middleware(
 async def save_api_request_to_db(request: Request,  call_next):
     """Middleware to save the API request to the database."""
     response = await call_next(request)
-    log.info("Request: %s", request.headers.items())
+
+    # Skip any OPTIONS requests
+    if request.method == "OPTIONS":
+        return response
 
     email = None
     # Check if the request has an auth object to avoid error
@@ -65,7 +68,6 @@ async def save_api_request_to_db(request: Request,  call_next):
 
     # TODO: store the referer in the DB
     log.info("Referer: %s", request.headers.get("referer"))
-    log.info("Email: %s", email)
     db = server.dependency_overrides[get_db_client]()
     db.save_api_call_to_db(url=request.url.path, email=email)
 
