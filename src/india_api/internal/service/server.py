@@ -26,11 +26,12 @@ version = "0.1.24"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
-auth = Auth(
-    domain=os.getenv("AUTH0_DOMAIN"),
-    api_audience=os.getenv("AUTH0_API_AUDIENCE"),
-    algorithm='RS256',
-)
+if (os.getenv("AUTH0_DOMAIN") is not None) and (os.getenv("AUTH0_API_AUDIENCE") is not None):
+    auth = Auth(
+        domain=os.getenv("AUTH0_DOMAIN"),
+        api_audience=os.getenv("AUTH0_API_AUDIENCE"),
+        algorithm="RS256",
+    )
 # TODO: add scopes for granular access across APIs
 # auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
 
