@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from india_api import internal
 from india_api.internal.inputs.utils import get_window
 from india_api.internal.inputs.indiadb.smooth import smooth_forecast
+from india_api.internal.models import ForecastHorizon
 
 log = logging.getLogger(__name__)
 
@@ -49,11 +50,20 @@ class Client(internal.DatabaseInterface):
         self,
         location: str,
         asset_type: SiteAssetType,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
     ) -> list[internal.PredictedPower]:
         """Gets the predicted power production for a location."""
 
         # Get the window
         start, end = get_window()
+
+        # get house ahead forecast
+        if forecast_horizon == ForecastHorizon.day_ahead:
+            day_ahead_hours = 9
+            day_ahead_timezone_delta_hours = 5.5
+        else:
+            day_ahead_hours = None
+            day_ahead_timezone_delta_hours = None
 
         # get site uuid
         with self._get_session() as session:
@@ -65,7 +75,11 @@ class Client(internal.DatabaseInterface):
 
             # read actual generations
             values = get_latest_forecast_values_by_site(
-                session, site_uuids=[site.site_uuid], start_utc=start
+                session,
+                site_uuids=[site.site_uuid],
+                start_utc=start,
+                day_ahead_hours=day_ahead_hours,
+                day_ahead_timezone_delta_hours=day_ahead_timezone_delta_hours,
             )
             forecast_values: [ForecastValueSQL] = values[site.site_uuid]
 
@@ -75,7 +89,7 @@ class Client(internal.DatabaseInterface):
                 PowerKW=int(value.forecast_power_kw)
                 if value.forecast_power_kw >= 0
                 else 0,  # Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC),
+                Time=value.start_utc.replace(tzinfo=dt.UTC),
             )
             for value in forecast_values
         ]
@@ -114,7 +128,7 @@ class Client(internal.DatabaseInterface):
                 PowerKW=int(value.generation_power_kw)
                 if value.generation_power_kw >= 0
                 else 0,  # Set negative values of PowerKW up to 0
-                Time=value.start_utc.astimezone(dt.UTC),
+                Time=value.start_utc.replace(tzinfo=dt.UTC),
             )
             for value in values
         ]
@@ -124,31 +138,35 @@ class Client(internal.DatabaseInterface):
     def get_predicted_solar_power_production_for_location(
         self,
         location: str,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
     ) -> [internal.PredictedPower]:
         """
         Gets the predicted solar power production for a location.
 
         Args:
             location: The location to get the predicted solar power production for.
+            forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
         """
 
         return self.get_predicted_power_production_for_location(
-            location=location, asset_type=SiteAssetType.pv
+            location=location, asset_type=SiteAssetType.pv, forecast_horizon=forecast_horizon
         )
 
     def get_predicted_wind_power_production_for_location(
         self,
         location: str,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
     ) -> list[internal.PredictedPower]:
         """
         Gets the predicted wind power production for a location.
 
         Args:
             location: The location to get the predicted wind power production for.
+            forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
         """
 
         return self.get_predicted_power_production_for_location(
-            location=location, asset_type=SiteAssetType.wind
+            location=location, asset_type=SiteAssetType.wind, forecast_horizon=forecast_horizon
         )
 
     def get_actual_solar_power_production_for_location(
