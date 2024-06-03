@@ -17,7 +17,7 @@ from india_api.internal import (
     PredictedPower,
 )
 from india_api.internal.models import ActualPower, ForecastHorizon
-from india_api.internal.service.auth import Auth
+from india_api.internal.service.auth import Auth, DummyAuth
 from india_api.internal.service.resample import resample_generation
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
@@ -26,11 +26,14 @@ version = "0.1.26"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
-auth = Auth(
-    domain=os.getenv("AUTH0_DOMAIN"),
-    api_audience=os.getenv("AUTH0_API_AUDIENCE"),
-    algorithm='RS256',
-)
+if (os.getenv("AUTH0_DOMAIN") is not None) and (os.getenv("AUTH0_API_AUDIENCE") is not None):
+    auth = Auth(
+        domain=os.getenv("AUTH0_DOMAIN"),
+        api_audience=os.getenv("AUTH0_API_AUDIENCE"),
+        algorithm="RS256",
+    )
+else:
+    auth = DummyAuth(domain="dummy", api_audience="dummy", algorithm="dummy")
 # TODO: add scopes for granular access across APIs
 # auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
 

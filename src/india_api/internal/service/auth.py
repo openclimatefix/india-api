@@ -5,6 +5,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 token_auth_scheme = HTTPBearer()
 
 
+class DummyAuth:
+    """Dummy auth dependency for testing purposes."""
+
+    def __init__(self, domain: str, api_audience: str, algorithm: str):
+        self._domain = domain
+        self._api_audience = api_audience
+        self._algorithm = algorithm
+
+    def __call__(self):
+        return {}
+
 class Auth:
     """Fast api dependency that validates an JWT token."""
 
