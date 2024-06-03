@@ -22,7 +22,7 @@ from india_api.internal.service.resample import resample_generation
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.24"
+version = "0.1.26"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
@@ -185,7 +185,7 @@ def get_forecast_timeseries_route(
         db: DBClientDependency,
         auth: dict = Depends(auth),
         # TODO: add auth scopes
-        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.day_ahead,
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
