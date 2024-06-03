@@ -4,6 +4,7 @@ import math
 import random
 
 from india_api import internal
+from india_api.internal.models import TimeHorizon
 
 from ._models import DummyDBPredictedPowerProduction
 from ..utils import get_window
@@ -18,11 +19,13 @@ class Client(internal.DatabaseInterface):
     def get_predicted_solar_power_production_for_location(
         self,
         location: str,
+        time_horizon: TimeHorizon = TimeHorizon.latest
     ) -> list[internal.PredictedPower]:
         """Gets the predicted solar power production for a location.
 
         Args:
             location: The location to get the predicted solar power production for.
+            time_horizon: The time horizon to get the data for. Can be latest or day ahead
         """
         # Get the window
         start, end = get_window()
@@ -44,11 +47,13 @@ class Client(internal.DatabaseInterface):
     def get_predicted_wind_power_production_for_location(
         self,
         location: str,
+        time_horizon: TimeHorizon = TimeHorizon.latest
     ) -> list[internal.PredictedPower]:
         """Gets the predicted wind power production for a location.
 
         Args:
             location: The location to get the predicted wind power production for.
+            time_horizon: The time horizon to get the data for. Can be latest or day ahead
         """
         # Get the window
         start, end = get_window()

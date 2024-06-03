@@ -16,7 +16,7 @@ from india_api.internal import (
     DatabaseInterface,
     PredictedPower,
 )
-from india_api.internal.models import ActualPower
+from india_api.internal.models import ActualPower, TimeHorizon
 from india_api.internal.service.auth import Auth
 from india_api.internal.service.resample import resample_generation
 
@@ -182,15 +182,16 @@ def get_forecast_timeseries_route(
         db: DBClientDependency,
         auth: dict = Depends(auth),
         # TODO: add auth scopes
+        time_horizon: TimeHorizon = TimeHorizon.latest,
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
 
     try:
         if source == "wind":
-            values = db.get_predicted_wind_power_production_for_location(location=region)
+            values = db.get_predicted_wind_power_production_for_location(location=region, time_horizon=time_horizon)
         elif source == "solar":
-            values = db.get_predicted_solar_power_production_for_location(location=region)
+            values = db.get_predicted_solar_power_production_for_location(location=region, time_horizon=time_horizon)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

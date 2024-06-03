@@ -3,7 +3,13 @@
 import abc
 import datetime as dt
 
+from enum import Enum
 from pydantic import BaseModel
+
+
+class TimeHorizon(str, Enum):
+    latest = "latest"
+    day_ahead = "day_ahead"
 
 
 class PredictedPower(BaseModel):
@@ -39,7 +45,7 @@ class DatabaseInterface(abc.ABC):
 
     @abc.abstractmethod
     def get_predicted_solar_power_production_for_location(
-        self, location: str
+        self, location: str, time_horizon: TimeHorizon = TimeHorizon.latest
     ) -> list[PredictedPower]:
         """Returns a list of predicted solar power production for a given location."""
         pass
@@ -51,7 +57,7 @@ class DatabaseInterface(abc.ABC):
 
     @abc.abstractmethod
     def get_predicted_wind_power_production_for_location(
-        self, location: str
+        self, location: str, time_horizon: TimeHorizon = TimeHorizon.latest
     ) -> list[PredictedPower]:
         """Returns a list of predicted wind power production for a given location."""
         pass
