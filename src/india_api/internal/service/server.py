@@ -182,7 +182,7 @@ def get_forecast_timeseries_route(
         db: DBClientDependency,
         auth: dict = Depends(auth),
         # TODO: add auth scopes
-        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.day_ahead,
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route."""
     values: list[PredictedPower] = []
