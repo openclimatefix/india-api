@@ -60,7 +60,7 @@ class Client(internal.DatabaseInterface):
         # get house ahead forecast
         if forecast_horizon == ForecastHorizon.day_ahead:
             day_ahead_hours = 9
-            day_ahead_timezone_delta_hours = 4.5
+            day_ahead_timezone_delta_hours = 5.5
         else:
             day_ahead_hours = None
             day_ahead_timezone_delta_hours = None
