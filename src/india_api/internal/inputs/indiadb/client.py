@@ -1,6 +1,7 @@
 """India DB client that conforms to the DatabaseInterface."""
 import datetime as dt
 import logging
+from typing import Optional
 
 from pvsite_datamodel import DatabaseConnection
 from pvsite_datamodel.read import (
@@ -51,8 +52,16 @@ class Client(internal.DatabaseInterface):
         location: str,
         asset_type: SiteAssetType,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon_minutes: Optional[int] = None,
     ) -> list[internal.PredictedPower]:
-        """Gets the predicted power production for a location."""
+        """Gets the predicted power production for a location.
+
+        Args:
+            location: not used
+            asset_type: The type of asset to get the forecast for
+            forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
+            forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
+        """
 
         # Get the window
         start, end = get_window()
@@ -61,9 +70,14 @@ class Client(internal.DatabaseInterface):
         if forecast_horizon == ForecastHorizon.day_ahead:
             day_ahead_hours = 9
             day_ahead_timezone_delta_hours = 5.5
+            forecast_horizon_minutes = None
+        elif forecast_horizon == ForecastHorizon.horizon:
+            day_ahead_hours = 9
+            day_ahead_timezone_delta_hours = 5.5
         else:
             day_ahead_hours = None
             day_ahead_timezone_delta_hours = None
+            forecast_horizon_minutes = None
 
         # get site uuid
         with self._get_session() as session:
@@ -80,6 +94,7 @@ class Client(internal.DatabaseInterface):
                 start_utc=start,
                 day_ahead_hours=day_ahead_hours,
                 day_ahead_timezone_delta_hours=day_ahead_timezone_delta_hours,
+                forecast_horizon_minutes=forecast_horizon_minutes,
             )
             forecast_values: [ForecastValueSQL] = values[site.site_uuid]
 
@@ -139,6 +154,7 @@ class Client(internal.DatabaseInterface):
         self,
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon_minutes: Optional[int] = None,
     ) -> [internal.PredictedPower]:
         """
         Gets the predicted solar power production for a location.
@@ -146,16 +162,21 @@ class Client(internal.DatabaseInterface):
         Args:
             location: The location to get the predicted solar power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
+            forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
         """
 
         return self.get_predicted_power_production_for_location(
-            location=location, asset_type=SiteAssetType.pv, forecast_horizon=forecast_horizon
+            location=location,
+            asset_type=SiteAssetType.pv,
+            forecast_horizon=forecast_horizon,
+            forecast_horizon_minutes=forecast_horizon_minutes,
         )
 
     def get_predicted_wind_power_production_for_location(
         self,
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon_minutes: Optional[int] = None,
     ) -> list[internal.PredictedPower]:
         """
         Gets the predicted wind power production for a location.
@@ -163,10 +184,14 @@ class Client(internal.DatabaseInterface):
         Args:
             location: The location to get the predicted wind power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
+            forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
         """
 
         return self.get_predicted_power_production_for_location(
-            location=location, asset_type=SiteAssetType.wind, forecast_horizon=forecast_horizon
+            location=location,
+            asset_type=SiteAssetType.wind,
+            forecast_horizon=forecast_horizon,
+            forecast_horizon_minutes=forecast_horizon_minutes,
         )
 
     def get_actual_solar_power_production_for_location(
