@@ -66,14 +66,15 @@ class Client(internal.DatabaseInterface):
         # Get the window
         start, end = get_window()
 
+        print(forecast_horizon)
         # get house ahead forecast
         if forecast_horizon == ForecastHorizon.day_ahead:
             day_ahead_hours = 9
             day_ahead_timezone_delta_hours = 5.5
             forecast_horizon_minutes = None
         elif forecast_horizon == ForecastHorizon.horizon:
-            day_ahead_hours = 9
-            day_ahead_timezone_delta_hours = 5.5
+            day_ahead_hours = None
+            day_ahead_timezone_delta_hours = None
         else:
             day_ahead_hours = None
             day_ahead_timezone_delta_hours = None
