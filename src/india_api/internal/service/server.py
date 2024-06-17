@@ -53,8 +53,9 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
-@server.middleware('http')
-async def save_api_request_to_db(request: Request,  call_next):
+
+@server.middleware("http")
+async def save_api_request_to_db(request: Request, call_next):
     """Middleware to save the API request to the database."""
     response = await call_next(request)
 
@@ -64,8 +65,8 @@ async def save_api_request_to_db(request: Request,  call_next):
 
     email = None
     # Check if the request has an auth object to avoid error
-    if hasattr(request.state, 'auth'):
-        auth = getattr(request.state, 'auth')
+    if hasattr(request.state, "auth"):
+        auth = getattr(request.state, "auth")
         email = auth.get("https://openclimatefix.org/email")
 
     # TODO: store the referer in the DB
@@ -74,6 +75,7 @@ async def save_api_request_to_db(request: Request,  call_next):
     db.save_api_call_to_db(url=request.url.path, email=email)
 
     return response
+
 
 def get_db_client() -> DatabaseInterface:
     """Dependency injection for the database client."""
@@ -138,13 +140,13 @@ class GetHistoricGenerationResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_historic_timeseries_route(
-        source: ValidSourceDependency,
-        request: Request,
-        region: str,
-        db: DBClientDependency,
-        auth: dict = Depends(auth),
-        # TODO: add auth scopes
-        resample_minutes: Optional[int] = None,
+    source: ValidSourceDependency,
+    request: Request,
+    region: str,
+    db: DBClientDependency,
+    auth: dict = Depends(auth),
+    # TODO: add auth scopes
+    resample_minutes: Optional[int] = None,
 ) -> GetHistoricGenerationResponse:
     """Function for the historic generation route."""
     values: list[ActualPower] = []
@@ -180,21 +182,37 @@ class GetForecastGenerationResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_forecast_timeseries_route(
-        source: ValidSourceDependency,
-        region: str,
-        db: DBClientDependency,
-        auth: dict = Depends(auth),
-        # TODO: add auth scopes
-        forecast_horizon: ForecastHorizon = ForecastHorizon.day_ahead,
+    source: ValidSourceDependency,
+    region: str,
+    db: DBClientDependency,
+    auth: dict = Depends(auth),
+    # TODO: add auth scopes
+    forecast_horizon: ForecastHorizon = ForecastHorizon.day_ahead,
+    forecast_horizon_minutes: Optional[int] = None,
 ) -> GetForecastGenerationResponse:
-    """Function for the forecast generation route."""
+    """Function for the forecast generation route.
+
+    Args:
+        source: The source of the forecast, this is current wind or solar.
+        region: The region to get the forecast for.
+        forecast_horizon: The time horizon to get the data for. Can be 'latest', 'horizon' or 'day ahead'
+        forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
+    """
     values: list[PredictedPower] = []
 
     try:
         if source == "wind":
-            values = db.get_predicted_wind_power_production_for_location(location=region, forecast_horizon=forecast_horizon)
+            values = db.get_predicted_wind_power_production_for_location(
+                location=region,
+                forecast_horizon=forecast_horizon,
+                forecast_horizon_minutes=forecast_horizon_minutes,
+            )
         elif source == "solar":
-            values = db.get_predicted_solar_power_production_for_location(location=region, forecast_horizon=forecast_horizon)
+            values = db.get_predicted_solar_power_production_for_location(
+                location=region,
+                forecast_horizon=forecast_horizon,
+                forecast_horizon_minutes=forecast_horizon_minutes,
+            )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -235,10 +253,10 @@ class GetRegionsResponse(BaseModel):
     status_code=status.HTTP_200_OK,
 )
 def get_regions_route(
-        source: ValidSourceDependency,
-        db: DBClientDependency,
-        auth: dict = Depends(auth),
-        # TODO: add auth scopes
+    source: ValidSourceDependency,
+    db: DBClientDependency,
+    auth: dict = Depends(auth),
+    # TODO: add auth scopes
 ) -> GetRegionsResponse:
     """Function for the regions route."""
 
