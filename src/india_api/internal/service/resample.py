@@ -5,6 +5,8 @@ from india_api.internal import (
 
 
 def resample_generation(values: list[ActualPower], internal_minutes: int) -> list[ActualPower]:
+    if not values:
+        return []
 
     # convert to dataframe
     df = pd.DataFrame(
