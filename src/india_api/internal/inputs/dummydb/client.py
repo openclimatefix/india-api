@@ -118,7 +118,7 @@ class Client(internal.DatabaseInterface):
         """Gets the valid solar regions."""
         return ["dummy_solar_region1", "dummy_solar_region2"]
 
-    def save_api_call_to_db(self, url: str, user=None):
+    def save_api_call_to_db(self, url: str, email=None):
         """Saves an API call to the database. This does nothing"""
         pass
 

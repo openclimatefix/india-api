@@ -72,7 +72,12 @@ async def save_api_request_to_db(request: Request, call_next):
     # TODO: store the referer in the DB
     log.info("Referer: %s", request.headers.get("referer"))
     db = server.dependency_overrides[get_db_client]()
-    db.save_api_call_to_db(url=request.url.path, email=email)
+
+    url = request.url.path
+    params = request.url.query
+    url_and_query = f'{url}?{params}'
+
+    db.save_api_call_to_db(url=url_and_query, email=email)
 
     return response
 
