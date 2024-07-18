@@ -75,7 +75,7 @@ async def save_api_request_to_db(request: Request, call_next):
 
     url = request.url.path
     params = request.url.query
-    url_and_query = f'{url}&{params}'
+    url_and_query = f'{url}?{params}'
 
     db.save_api_call_to_db(url=url_and_query, email=email)
 
