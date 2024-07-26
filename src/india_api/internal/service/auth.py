@@ -1,4 +1,5 @@
 import jwt
+import os
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -48,3 +49,16 @@ class Auth:
         request.state.auth = payload
 
         return payload
+
+
+if (os.getenv("AUTH0_DOMAIN") is not None) and (os.getenv("AUTH0_API_AUDIENCE") is not None):
+    auth = Auth(
+        domain=os.getenv("AUTH0_DOMAIN"),
+        api_audience=os.getenv("AUTH0_API_AUDIENCE"),
+        algorithm="RS256",
+    )
+else:
+    auth = DummyAuth(domain="dummy", api_audience="dummy", algorithm="dummy")
+# TODO: add scopes for granular access across APIs
+# auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
+
