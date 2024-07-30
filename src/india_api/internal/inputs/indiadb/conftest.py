@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 import pytest
 from pvsite_datamodel.sqlmodels import Base, ForecastSQL, ForecastValueSQL, GenerationSQL, SiteSQL
+from pvsite_datamodel.read.user import get_user_by_email
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
@@ -82,6 +83,10 @@ def sites(db_session):
     sites.append(site)
 
     db_session.commit()
+
+    # create user
+    user = get_user_by_email(session=db_session, email='test@test.com')
+    user.site_group.sites = sites
 
     return sites
 

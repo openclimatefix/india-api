@@ -65,3 +65,30 @@ class TestIndiaDBClient:
         result = client.get_solar_regions()
         assert len(result) == 1
         assert result[0] == "ruvnl"
+
+    def test_get_sites(self, client, sites) -> None:
+        sites_from_api = client.get_sites(email="test@test.com")
+        assert len(sites_from_api) == 2
+
+    def test_get_sites_no_sites(self, client, sites) -> None:
+        sites_from_api = client.get_sites(email="test2@test.com")
+        assert len(sites_from_api) == 0
+
+    def test_get_site_forecast(self, client, sites) -> None:
+        out = client.get_site_forecast(site_uuid=sites[0].site_uuid, email="test@test.com")
+        self.assertIsNotNone(out)
+
+    def test_get_site_forecast_no_access(self, client, sites) -> None:
+        with pytest.raises(Exception):
+            _ = client.get_site_forecast(site_uuid=sites[0].site_uuid, email="test2@test.com")
+
+    def test_get_site_generation(self, client, sites) -> None:
+        out = client.get_site_generation(site_uuid=sites[0].site_uuid, email="test@test.com")
+        self.assertIsNotNone(out)
+
+    def test_post_site_generation(self, client, sites) -> None:
+        client.post_site_generation(
+            site_uuid=sites[0].site_uuid,
+            generation=[ActualPower(Time=1, PowerKW=1)],
+            email="test@test.com",
+        )
