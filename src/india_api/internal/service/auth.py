@@ -15,7 +15,8 @@ class DummyAuth:
         self._algorithm = algorithm
 
     def __call__(self):
-        return {}
+        return {"https://openclimatefix.org/email": "test@test.com"}
+
 
 class Auth:
     """Fast api dependency that validates an JWT token."""
@@ -27,7 +28,11 @@ class Auth:
 
         self._jwks_client = jwt.PyJWKClient(f"https://{domain}/.well-known/jwks.json")
 
-    def __call__(self, request: Request, auth_credentials: HTTPAuthorizationCredentials = Depends(token_auth_scheme)):
+    def __call__(
+        self,
+        request: Request,
+        auth_credentials: HTTPAuthorizationCredentials = Depends(token_auth_scheme),
+    ):
         token = auth_credentials.credentials
 
         try:
@@ -61,4 +66,3 @@ else:
     auth = DummyAuth(domain="dummy", api_audience="dummy", algorithm="dummy")
 # TODO: add scopes for granular access across APIs
 # auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
-

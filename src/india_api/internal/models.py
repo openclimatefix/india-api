@@ -2,10 +2,10 @@
 
 import abc
 import datetime as dt
-from typing import Optional
+from typing import List, Optional
 
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ForecastHorizon(str, Enum):
@@ -48,6 +48,37 @@ class ActualPower(BaseModel):
             PowerKW=self.PowerKW,
             Time=self.Time.astimezone(tz=tz),
         )
+
+
+class Site(BaseModel):
+    """Site metadata"""
+
+    site_uuid: str = Field(..., json_schema_extra={"description": "The site uuid assigned by ocf."})
+    client_site_name: Optional[str] = Field(
+        None,
+        json_schema_extra={"description": "The name of the site as given by the providing user."},
+    )
+    orientation: Optional[float] = Field(
+        180,
+        json_schema_extra={
+            "description": "The rotation of the panel in degrees. 180° points south"
+        },
+    )
+    tilt: Optional[float] = Field(
+        35,
+        json_schema_extra={
+            "description": "The tile of the panel in degrees. 90° indicates the panel is vertical."
+        },
+    )
+    latitude: float = Field(
+        ..., json_schema_extra={"description": "The site's latitude"}, ge=-90, le=90
+    )
+    longitude: float = Field(
+        ..., json_schema_extra={"description": "The site's longitude"}, ge=-180, le=180
+    )
+    capacity_kw: float = Field(
+        ..., json_schema_extra={"description": "The site's total capacity in kw"}, ge=0
+    )
 
 
 class DatabaseInterface(abc.ABC):
@@ -96,4 +127,24 @@ class DatabaseInterface(abc.ABC):
     @abc.abstractmethod
     def save_api_call_to_db(self, url: str, user=None):
         """Saves an API call to the database."""
+        pass
+
+    @abc.abstractmethod
+    def get_sites(self, email: str) -> list[Site]:
+        """Get a list of sites"""
+        pass
+
+    @abc.abstractmethod
+    def get_site_forecast(self, site_uuid: str) -> list[PredictedPower]:
+        """Get a forecast for a site"""
+        pass
+
+    @abc.abstractmethod
+    def get_site_generation(self, site_uuid: str) -> list[ActualPower]:
+        """Get the generation for a site"""
+        pass
+
+    @abc.abstractmethod
+    def post_site_generation(self, site_uuid: str, generation: list[ActualPower]) -> None:
+        """Post the generation for a site"""
         pass

@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from india_api.internal.service.sites import router as sites_router
-from india_api.internal.service.regions import router as regions_router, get_db_client
+from india_api.internal.service.regions import router as regions_router
+from india_api.internal.service.database_client import get_db_client
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
@@ -25,14 +26,14 @@ tags_metadata = [
     {
         "name": "Sites",
         "description": "A site is a specific location, for example (52.15,1.25) in latitude and longitude. "
-                       "Each site will have one source of energy "
-                       "and there is forecast and generation data for each site. ",
+        "Each site will have one source of energy "
+        "and there is forecast and generation data for each site. ",
     },
     {
         "name": "Regions",
         "description": "A region is an area of land e.g. a Alaska in the USA. "
-                       "There is forecast and generation data for each region "
-                       "and there may be different sources of energy in one region.",
+        "There is forecast and generation data for each region "
+        "and there may be different sources of energy in one region.",
     },
 ]
 
@@ -75,7 +76,7 @@ async def save_api_request_to_db(request: Request, call_next):
 
     url = request.url.path
     params = request.url.query
-    url_and_query = f'{url}?{params}'
+    url_and_query = f"{url}?{params}"
 
     db.save_api_call_to_db(url=url_and_query, email=email)
 
@@ -85,6 +86,7 @@ async def save_api_request_to_db(request: Request, call_next):
 # === API ROUTES ==============================================================
 server.include_router(sites_router)
 server.include_router(regions_router)
+
 
 class GetHealthResponse(BaseModel):
     """Model for the health endpoint response."""
@@ -100,7 +102,3 @@ class GetHealthResponse(BaseModel):
 def get_health_route() -> GetHealthResponse:
     """Health endpoint for the API."""
     return GetHealthResponse(status=status.HTTP_200_OK)
-
-
-
-

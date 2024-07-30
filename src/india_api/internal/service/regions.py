@@ -6,8 +6,9 @@ from pydantic import BaseModel
 from starlette import status
 from starlette.requests import Request
 
-from india_api.internal import ActualPower, PredictedPower, DatabaseInterface
+from india_api.internal import ActualPower, PredictedPower
 from india_api.internal.models import ForecastHorizon
+from india_api.internal.service.database_client import DBClientDependency
 from india_api.internal.service.resample import resample_generation
 from india_api.internal.service.auth import auth
 from india_api.internal.service.constants import local_tz
@@ -52,14 +53,6 @@ def validate_source(source: str) -> str:
 
 
 ValidSourceDependency = Annotated[str, Depends(validate_source)]
-
-
-def get_db_client() -> DatabaseInterface:
-    """Dependency injection for the database client."""
-    return DatabaseInterface()
-
-
-DBClientDependency = Annotated[DatabaseInterface, Depends(get_db_client)]
 
 
 @router.get(
