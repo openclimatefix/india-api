@@ -1,7 +1,9 @@
 """India DB client that conforms to the DatabaseInterface."""
 import datetime as dt
+import pandas as pd
 import logging
 from typing import Optional
+from fastapi import HTTPException
 
 from pvsite_datamodel import DatabaseConnection
 from pvsite_datamodel.read import (
@@ -9,7 +11,9 @@ from pvsite_datamodel.read import (
     get_latest_forecast_values_by_site,
     get_pv_generation_by_sites,
     get_user_by_email,
+    get_sites_from_user,
 )
+from pvsite_datamodel.write.generation import insert_generation_values
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
 from pvsite_datamodel.write.database import save_api_call_to_db
 from sqlalchemy.orm import Session
@@ -219,18 +223,115 @@ class Client(internal.DatabaseInterface):
     def get_sites(self, email: str) -> list[internal.Site]:
         """Get a list of sites"""
 
-        pass
+        # get sites uuids from user
+        with self._get_session() as session:
+            user = get_user_by_email(session, email)
+            sites_sql = get_sites_from_user(session, user=user)
 
-    def get_site_forecast(self, site_uuid: str) -> list[internal.PredictedPower]:
+            sites = []
+            for site_sql in sites_sql:
+                site = internal.Site(
+                    site_uuid=site_sql.site_uuid,
+                    client_site_name=site_sql.client_site_name,
+                    orientation=site_sql.orientation,
+                    tilt=site_sql.tilt,
+                    capacity_kw=site_sql.capacity_kw,
+                    latitude=site_sql.latitude,
+                    longitude=site_sql.longitude,
+                )
+                sites.append(site)
+
+            return sites
+
+    def get_site_forecast(self, site_uuid: str, email:str) -> list[internal.PredictedPower]:
         """Get a forecast for a site, this is for a solar site"""
 
-        pass
+        # Get the window
+        start, _ = get_window()
 
-    def get_site_generation(self, site_uuid: str) -> list[internal.ActualPower]:
+        with self._get_session() as session:
+            check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
+
+            values = get_latest_forecast_values_by_site(
+                session,
+                site_uuids=[site_uuid],
+                start_utc=start,
+            )
+            forecast_values: [ForecastValueSQL] = values[site_uuid]
+
+            # convert ForecastValueSQL to PredictedPower
+        values = [
+            internal.PredictedPower(
+                PowerKW=int(value.forecast_power_kw)
+                if value.forecast_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.replace(tzinfo=dt.UTC),
+            )
+            for value in forecast_values
+        ]
+
+        return values
+
+    def get_site_generation(self, site_uuid: str, email:str) -> list[internal.ActualPower]:
         """Get the generation for a site, this is for a solar site"""
 
-        pass
+        # Get the window
+        start, end = get_window()
 
-    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower]):
+        with self._get_session() as session:
+            check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
+
+            # read actual generations
+            values = get_pv_generation_by_sites(
+                session=session, site_uuids=[site_uuid], start_utc=start, end_utc=end
+            )
+
+        # convert from GenerationSQL to PredictedPower
+        values = [
+            internal.ActualPower(
+                PowerKW=int(value.generation_power_kw)
+                if value.generation_power_kw >= 0
+                else 0,  # Set negative values of PowerKW up to 0
+                Time=value.start_utc.replace(tzinfo=dt.UTC),
+            )
+            for value in values
+        ]
+
+        return values
+
+    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower], email:str):
         """Post generation for a site"""
-        pass
+
+        with self._get_session() as session:
+            check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
+
+            generations = []
+            for pv_actual_value in generation:
+                generations.append(
+                    {
+                        "start_utc": pv_actual_value.Time,
+                        "power_kw": pv_actual_value.PowerKW,
+                        "site_uuid": site_uuid,
+                    }
+                )
+
+            generation_values_df = pd.DataFrame(generations)
+
+            insert_generation_values(session, generation_values_df)
+            session.commit()
+
+
+def check_user_has_access_to_site(session: Session, email: str, site_uuid: str):
+    """
+    Checks if a user has access to a site.
+    """
+
+    user = get_user_by_email(session=session, email=email)
+    site_uuids = [str(site.site_uuid) for site in user.site_group.sites]
+    if site_uuid not in site_uuids:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Forbidden. User ({email}) "
+            f"does not have access to this site {site_uuid}. "
+            f"User has access to {site_uuids}",
+        )

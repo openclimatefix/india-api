@@ -135,16 +135,16 @@ class DatabaseInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_site_forecast(self, site_uuid: str) -> list[PredictedPower]:
+    def get_site_forecast(self, site_uuid: str, email:str) -> list[PredictedPower]:
         """Get a forecast for a site"""
         pass
 
     @abc.abstractmethod
-    def get_site_generation(self, site_uuid: str) -> list[ActualPower]:
+    def get_site_generation(self, site_uuid: str, email:str) -> list[ActualPower]:
         """Get the generation for a site"""
         pass
 
     @abc.abstractmethod
-    def post_site_generation(self, site_uuid: str, generation: list[ActualPower]) -> None:
+    def post_site_generation(self, site_uuid: str, generation: list[ActualPower], email:str) -> None:
         """Post the generation for a site"""
         pass

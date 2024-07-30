@@ -139,21 +139,21 @@ class Client(internal.DatabaseInterface):
 
         return [site]
 
-    def get_site_forecast(self, site_uuid: str) -> list[internal.PredictedPower]:
+    def get_site_forecast(self, site_uuid: str, email: str) -> list[internal.PredictedPower]:
         """Get a forecast for a site, this is for a solar site"""
 
         values = self.get_predicted_solar_power_production_for_location(location="dummy")
 
         return values
 
-    def get_site_generation(self, site_uuid: str) -> list[internal.ActualPower]:
+    def get_site_generation(self, site_uuid: str, email: str) -> list[internal.ActualPower]:
         """Get the generation for a site, this is for a solar site"""
 
         values = self.get_actual_solar_power_production_for_location(location="dummy")
 
         return values
 
-    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower]):
+    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower], email: str):
         """Post generation for a site"""
         pass
 

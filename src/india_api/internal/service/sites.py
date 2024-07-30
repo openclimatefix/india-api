@@ -35,9 +35,10 @@ def get_forecast(
 ) -> list[PredictedPower]:
     """Get forecast of a site"""
 
-    # TODO check auth
+    # get email from auth
+    email = auth["https://openclimatefix.org/email"]
 
-    forecast = db.get_site_forecast(site_uuid=site_uuid)
+    forecast = db.get_site_forecast(site_uuid=site_uuid, email=email)
 
     return forecast
 
@@ -51,9 +52,10 @@ def get_generation(
 ) -> list[ActualPower]:
     """Get get generation fo a site"""
 
-    # TODO check auth
+    # get email from auth
+    email = auth["https://openclimatefix.org/email"]
 
-    generation = db.get_site_generation(site_uuid=site_uuid)
+    generation = db.get_site_generation(site_uuid=site_uuid, email=email)
 
     return generation
 
@@ -70,6 +72,7 @@ def post_generation(
 ):
     """Get sites"""
 
-    # TODO check auth
+    # get email from auth
+    email = auth["https://openclimatefix.org/email"]
 
-    db.post_site_generation(site_uuid=site_uuid, generation=generation)
+    db.post_site_generation(site_uuid=site_uuid, generation=generation, email=email)
