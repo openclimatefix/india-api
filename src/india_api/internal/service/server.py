@@ -38,7 +38,38 @@ tags_metadata = [
 ]
 
 title = "India API"
-description = "API providing OCF Forecast for India"
+description = """ API providing OCF Forecast for India.
+
+## Regions
+
+The regions routes are used to get solar and wind forecasts. 
+
+## Sites
+
+The sites routes are used to get site level forecasts. 
+A user can
+- **/sites**: Get information about your sites
+- **/sites/{site_uuid}/forecast**: Get a forecast for a specific site
+- **/sites/{site_uuid}/forecast**: Get and post generation for a specific site
+
+### Authentication and Example
+If you need an authentication route, please get your access token with the following code. 
+You'll need a username and password. 
+```
+export AUTH=$(curl --request POST 
+   --url https://nowcasting-pro.eu.auth0.com/oauth/token 
+   --header 'content-type: application/json' 
+   --data '{"client_id":"TODO", "audience":"https://api.nowcasting.io/", "grant_type":"password", "username":"username", "password":"password"}'
+)
+
+export TOKEN=$(echo "${AUTH}" | jq '.access_token' | tr -d '"')
+```
+You can then use
+```
+curl -X GET 'https://api.quartz.energy/sites' -H "Authorization: Bearer $TOKEN"
+```
+
+"""
 server = FastAPI(
     version=version,
     title=title,
