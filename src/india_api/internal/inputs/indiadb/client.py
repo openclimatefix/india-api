@@ -215,3 +215,22 @@ class Client(internal.DatabaseInterface):
     def get_solar_regions(self) -> list[str]:
         """Gets the valid solar regions."""
         return ["ruvnl"]
+
+    def get_sites(self, email: str) -> list[internal.Site]:
+        """Get a list of sites"""
+
+        pass
+
+    def get_site_forecast(self, site_uuid: str) -> list[internal.PredictedPower]:
+        """Get a forecast for a site, this is for a solar site"""
+
+        pass
+
+    def get_site_generation(self, site_uuid: str) -> list[internal.ActualPower]:
+        """Get the generation for a site, this is for a solar site"""
+
+        pass
+
+    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower]):
+        """Post generation for a site"""
+        pass
