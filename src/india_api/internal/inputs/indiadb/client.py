@@ -231,7 +231,7 @@ class Client(internal.DatabaseInterface):
             sites = []
             for site_sql in sites_sql:
                 site = internal.Site(
-                    site_uuid=site_sql.site_uuid,
+                    site_uuid=str(site_sql.site_uuid),
                     client_site_name=site_sql.client_site_name,
                     orientation=site_sql.orientation,
                     tilt=site_sql.tilt,
@@ -328,6 +328,8 @@ def check_user_has_access_to_site(session: Session, email: str, site_uuid: str):
 
     user = get_user_by_email(session=session, email=email)
     site_uuids = [str(site.site_uuid) for site in user.site_group.sites]
+    site_uuid = str(site_uuid)
+
     if site_uuid not in site_uuids:
         raise HTTPException(
             status_code=403,

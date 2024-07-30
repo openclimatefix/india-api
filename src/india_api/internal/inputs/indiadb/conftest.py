@@ -88,6 +88,8 @@ def sites(db_session):
     user = get_user_by_email(session=db_session, email='test@test.com')
     user.site_group.sites = sites
 
+    db_session.commit()
+
     return sites
 
 
