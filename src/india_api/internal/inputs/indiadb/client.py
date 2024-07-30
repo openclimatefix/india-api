@@ -246,6 +246,8 @@ class Client(internal.DatabaseInterface):
     def get_site_forecast(self, site_uuid: str, email:str) -> list[internal.PredictedPower]:
         """Get a forecast for a site, this is for a solar site"""
 
+        # TODO feels like there is some duplicated code here which could be refactored
+
         # Get the window
         start, _ = get_window()
 
@@ -274,6 +276,8 @@ class Client(internal.DatabaseInterface):
 
     def get_site_generation(self, site_uuid: str, email:str) -> list[internal.ActualPower]:
         """Get the generation for a site, this is for a solar site"""
+
+        # TODO feels like there is some duplicated code here which could be refactored
 
         # Get the window
         start, end = get_window()

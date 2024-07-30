@@ -9,6 +9,8 @@ from .client import Client
 
 log = logging.getLogger(__name__)
 
+# TODO add list of test that are here
+
 
 @pytest.fixture()
 def client(engine, db_session):
