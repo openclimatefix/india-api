@@ -4,6 +4,7 @@ from .models import (
     ActualPower,
     DatabaseInterface,
     PredictedPower,
+    Site,
 )
 
 from . import (
@@ -15,6 +16,7 @@ __all__ = [
     "ActualPower",
     "PredictedPower",
     "DatabaseInterface",
+    "Site",
     "inputs",
     "service",
 ]

@@ -2,6 +2,9 @@
 import datetime as dt
 import math
 import random
+from uuid import uuid4
+from typing import Optional
+
 
 from india_api import internal
 from india_api.internal.models import ForecastHorizon
@@ -17,9 +20,7 @@ class Client(internal.DatabaseInterface):
     """Defines a dummy database that conforms to the DatabaseInterface."""
 
     def get_predicted_solar_power_production_for_location(
-        self,
-        location: str,
-        forecast_horizon: ForecastHorizon = ForecastHorizon.latest
+        self, location: str, forecast_horizon: ForecastHorizon = ForecastHorizon.latest
     ) -> list[internal.PredictedPower]:
         """Gets the predicted solar power production for a location.
 
@@ -45,9 +46,7 @@ class Client(internal.DatabaseInterface):
         return values
 
     def get_predicted_wind_power_production_for_location(
-        self,
-        location: str,
-        forecast_horizon: ForecastHorizon = ForecastHorizon.latest
+        self, location: str, forecast_horizon: ForecastHorizon = ForecastHorizon.latest
     ) -> list[internal.PredictedPower]:
         """Gets the predicted wind power production for a location.
 
@@ -72,7 +71,9 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_actual_solar_power_production_for_location(self, location: str) -> list[internal.ActualPower]:
+    def get_actual_solar_power_production_for_location(
+        self, location: str
+    ) -> list[internal.ActualPower]:
         """Gets the actual solar power production for a location."""
         # Get the window
         start, end = get_window()
@@ -91,7 +92,9 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_actual_wind_power_production_for_location(self, location: str) -> list[internal.ActualPower]:
+    def get_actual_wind_power_production_for_location(
+        self, location: str
+    ) -> list[internal.ActualPower]:
         """Gets the actual wind power production for a location."""
         # Get the window
         start, end = get_window()
@@ -122,8 +125,49 @@ class Client(internal.DatabaseInterface):
         """Saves an API call to the database. This does nothing"""
         pass
 
+    def get_sites(self, email: str) -> list[internal.Site]:
+        """Get a list of sites"""
 
-def _basicSolarPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedPowerProduction:
+        uuid = str(uuid4())
+
+        site = internal.Site(
+            site_uuid=uuid,
+            client_site_id=1,
+            latitude=26,
+            longitude=76,
+            capacity_kw=76,
+        )
+
+        return [site]
+
+    def get_site_forecast(
+        self, site_uuid: str, email: Optional[str] = None
+    ) -> list[internal.PredictedPower]:
+        """Get a forecast for a site, this is for a solar site"""
+
+        values = self.get_predicted_solar_power_production_for_location(location="dummy")
+
+        return values
+
+    def get_site_generation(
+        self, site_uuid: str, email: Optional[str] = None
+    ) -> list[internal.ActualPower]:
+        """Get the generation for a site, this is for a solar site"""
+
+        values = self.get_actual_solar_power_production_for_location(location="dummy")
+
+        return values
+
+    def post_site_generation(
+        self, site_uuid: str, generation: list[internal.ActualPower], email: Optional[str] = None
+    ):
+        """Post generation for a site"""
+        pass
+
+
+def _basicSolarPowerProductionFunc(
+    timeUnix: int, scaleFactor: int = 10000
+) -> DummyDBPredictedPowerProduction:
     """Gets a fake solar PowerProduction for the input time.
 
     The basic PowerProduction function is built from a sine wave
@@ -157,7 +201,7 @@ def _basicSolarPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> D
     # Remove negative values
     basefunc = max(0, basefunc)
     # Steepen the curve. The divisor is based on the max value
-    basefunc = basefunc**4 / 1.5**4
+    basefunc = basefunc ** 4 / 1.5 ** 4
 
     # Instead of completely random noise, apply based on the following process:
     # * A base noise function which is the product of long and short sines
@@ -182,7 +226,9 @@ def _basicSolarPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> D
     )
 
 
-def _basicWindPowerProductionFunc(timeUnix: int, scaleFactor: int = 10000) -> DummyDBPredictedPowerProduction:
+def _basicWindPowerProductionFunc(
+    timeUnix: int, scaleFactor: int = 10000
+) -> DummyDBPredictedPowerProduction:
     """Gets a fake wind PowerProduction for the input time."""
     output = min(scaleFactor, scaleFactor * 10 * random.random())
 
