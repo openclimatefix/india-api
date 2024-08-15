@@ -1,19 +1,21 @@
 import datetime as dt
 from typing import Optional, Annotated
 
+import pandas as pd
+from fastapi import APIRouter
 from fastapi import Depends, HTTPException
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from starlette import status
 from starlette.requests import Request
 
 from india_api.internal import ActualPower, PredictedPower
 from india_api.internal.models import ForecastHorizon
-from india_api.internal.service.database_client import DBClientDependency
-from india_api.internal.service.resample import resample_generation
 from india_api.internal.service.auth import auth
 from india_api.internal.service.constants import local_tz
-
-from fastapi import APIRouter
+from india_api.internal.service.csv import format_csv
+from india_api.internal.service.database_client import DBClientDependency
+from india_api.internal.service.resample import resample_generation
 
 router = APIRouter(
     tags=["Regions"],
@@ -165,4 +167,39 @@ def get_forecast_timeseries_route(
 
     return GetForecastGenerationResponse(
         values=[y.to_timezone(tz=local_tz) for y in values],
+    )
+
+
+@router.get(
+    "/{source}/{region}/forecast/csv", response_class=FileResponse
+)
+def get_forecast_da_csv(
+    source: ValidSourceDependency,
+    region: str,
+    db: DBClientDependency,
+    auth: dict = Depends(auth),
+):
+    """
+    Route to get the day ahead forecast as a CSV file.
+    """
+
+    forcasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
+        source=source, region=region, db=db, auth=auth, forecast_horizon=ForecastHorizon.day_ahead
+    )
+
+    # format to dataframe
+    df = format_csv(forcasts.values)
+
+    # make file format
+    now_ist = pd.Timestamp.now(tz="Asia/Kolkata")
+    tomorrow_ist = df["Date [IST]"].iloc[0]
+    csv_file_path = f"{region}_{source}_da_{tomorrow_ist}.csv"
+
+    description = f"Forecast for {region} for {source} for {tomorrow_ist}. The Forecast was created at {now_ist}"
+
+    output = df.to_csv(index=False)
+    return StreamingResponse(
+        iter([output] + [description]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={csv_file_path}"},
     )

@@ -1,17 +1,16 @@
 """Defines the routes of the API."""
 
+import logging
 import os
 import sys
-
-import logging
 
 from fastapi import FastAPI, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from india_api.internal.service.sites import router as sites_router
-from india_api.internal.service.regions import router as regions_router
 from india_api.internal.service.database_client import get_db_client
+from india_api.internal.service.regions import router as regions_router
+from india_api.internal.service.sites import router as sites_router
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
@@ -70,6 +69,7 @@ curl -X GET 'https://api.quartz.energy/sites' -H "Authorization: Bearer $TOKEN"
 ```
 
 """
+
 server = FastAPI(
     version=version,
     title=title,
