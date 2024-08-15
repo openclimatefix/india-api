@@ -1,12 +1,14 @@
 import pandas as pd
+from datetime import datetime
 
 from india_api.internal import PredictedPower
 
 
-
-def format_csv(values: list[PredictedPower]) -> pd.DataFrame:
+def format_csv_and_created_time(values: list[PredictedPower]) -> (pd.DataFrame, datetime):
     """
     Format the predicted power values into a pandas dataframe ready for CSV export.
+
+    We also get the maximum created time of these forecasts
 
     The pandas dataframes ends up with
     - Date [IST]: The date
@@ -29,13 +31,16 @@ def format_csv(values: list[PredictedPower]) -> pd.DataFrame:
     # combine start and end times
     df["Time"] = df["Start Time [IST]"].astype(str) + " - " + df["End Time [IST]"].astype(str)
 
-    # drop start and end columns and order
-    df = df.drop(columns=["Start Time [IST]", "End Time [IST]"])
-    df = df[["Date [IST]", "Time", "PowerKW"]]
-
     # only get tomorrows results. This is for IST time.
     now_ist = pd.Timestamp.now(tz="Asia/Kolkata")
     tomorrow = now_ist + pd.Timedelta(days=1)
     df = df[df["Date [IST]"] == tomorrow.date()]
 
-    return df
+    # get the max created time
+    created_time = df["CreatedTime"].max()
+
+    # drop and order
+    df = df.drop(columns=["CreatedTime", "Start Time [IST]", "End Time [IST]"])
+    df = df[["Date [IST]", "Time", "PowerKW"]]
+
+    return df, created_time

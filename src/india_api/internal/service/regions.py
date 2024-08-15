@@ -13,7 +13,7 @@ from india_api.internal import ActualPower, PredictedPower
 from india_api.internal.models import ForecastHorizon
 from india_api.internal.service.auth import auth
 from india_api.internal.service.constants import local_tz
-from india_api.internal.service.csv import format_csv
+from india_api.internal.service.csv import format_csv_and_created_time
 from india_api.internal.service.database_client import DBClientDependency
 from india_api.internal.service.resample import resample_generation
 
@@ -188,12 +188,10 @@ def get_forecast_da_csv(
     )
 
     # format to dataframe
-    df = format_csv(forcasts.values)
+    df, created_time = format_csv_and_created_time(forcasts.values)
 
     # make file format
     now_ist = pd.Timestamp.now(tz="Asia/Kolkata")
-    created_time = max([f.CreatedTime for f in forcasts.values])
-    created_time = created_time.astimezone(local_tz)
     tomorrow_ist = df["Date [IST]"].iloc[0]
     csv_file_path = f"{region}_{source}_da_{tomorrow_ist}.csv"
 
