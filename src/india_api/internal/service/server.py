@@ -25,13 +25,13 @@ tags_metadata = [
     },
     {
         "name": "Sites",
-        "description": "A site is a specific location, for example (52.15,1.25) in latitude and longitude. "
+        "description": "A site is a specific point location, for example (52.15, 1.25) in latitude and longitude. "
         "Each site will have one source of energy "
         "and there is forecast and generation data for each site. ",
     },
     {
         "name": "Regions",
-        "description": "A region is an area of land e.g. a Alaska in the USA. "
+        "description": "A region is an area of land e.g. Alaska in the USA. "
         "There is forecast and generation data for each region "
         "and there may be different sources of energy in one region.",
     },
