@@ -44,6 +44,7 @@ class Client(internal.DatabaseInterface):
                 internal.PredictedPower(
                     Time=time,
                     PowerKW=int(_PowerProduction.PowerProductionKW),
+                    CreatedTime=dt.datetime.now(tz=dt.UTC),
                 ),
             )
 
@@ -74,6 +75,7 @@ class Client(internal.DatabaseInterface):
                 internal.PredictedPower(
                     Time=time,
                     PowerKW=int(_PowerProduction.PowerProductionKW),
+                    CreatedTime=dt.datetime.now(tz=dt.UTC),
                 ),
             )
 

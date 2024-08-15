@@ -19,12 +19,14 @@ def smooth_forecast(values: list[PredictedPower]) -> list[PredictedPower]:
 
     # convert to ints
     df["PowerKW"] = df["PowerKW"].astype(int)
+    df["CreatedTime"] = [value.CreatedTime for value in values]
 
     # convert back to list of PredictedPower
     return [
         PredictedPower(
             Time=index,
             PowerKW=row.PowerKW,
+            CreatedTime=row.CreatedTime,
         )
         for index, row in df.iterrows()
     ]

@@ -109,6 +109,7 @@ class Client(internal.DatabaseInterface):
                 if value.forecast_power_kw >= 0
                 else 0,  # Set negative values of PowerKW up to 0
                 Time=value.start_utc.replace(tzinfo=dt.UTC),
+                CreatedTime=value.created_utc.replace(tzinfo=dt.UTC),
             )
             for value in forecast_values
         ]
@@ -141,7 +142,7 @@ class Client(internal.DatabaseInterface):
                 session=session, site_uuids=[site.site_uuid], start_utc=start, end_utc=end
             )
 
-        # convert from GenerationSQL to PredictedPower
+        # convert from GenerationSQL to ActualPower
         values = [
             internal.ActualPower(
                 PowerKW=int(value.generation_power_kw)
@@ -268,6 +269,7 @@ class Client(internal.DatabaseInterface):
                 if value.forecast_power_kw >= 0
                 else 0,  # Set negative values of PowerKW up to 0
                 Time=value.start_utc.replace(tzinfo=dt.UTC),
+                CreatedTime=value.created_utc.replace(tzinfo=dt.UTC),
             )
             for value in forecast_values
         ]
