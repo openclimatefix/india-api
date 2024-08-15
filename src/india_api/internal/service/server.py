@@ -15,7 +15,7 @@ from india_api.internal.service.database_client import get_db_client
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.31"
+version = "0.1.32"
 
 
 tags_metadata = [
