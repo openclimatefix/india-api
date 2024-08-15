@@ -22,10 +22,13 @@ from india_api.internal.models import ActualPower, ForecastHorizon
 from india_api.internal.service.auth import Auth, DummyAuth
 from india_api.internal.service.csv import format_csv
 from india_api.internal.service.resample import resample_generation
+from india_api.internal.service.sites import router as sites_router
+from india_api.internal.service.regions import router as regions_router
+from india_api.internal.service.database_client import get_db_client, DBClientDependency
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.31"
+version = "0.1.32"
 
 local_tz = pytz.timezone("Asia/Kolkata")
 
@@ -40,12 +43,64 @@ else:
 # TODO: add scopes for granular access across APIs
 # auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
 
+tags_metadata = [
+    {
+        "name": "API Information",
+        "description": "General API information,",
+    },
+    {
+        "name": "Sites",
+        "description": "A site is a specific point location, for example (52.15, 1.25) in latitude and longitude. "
+        "Each site will have one source of energy "
+        "and there is forecast and generation data for each site. ",
+    },
+    {
+        "name": "Regions",
+        "description": "A region is an area of land e.g. Alaska in the USA. "
+        "There is forecast and generation data for each region "
+        "and there may be different sources of energy in one region.",
+    },
+]
+
 title = "India API"
-description = "API providing OCF Forecast for India"
+description = """ API providing OCF Forecast for India.
+
+## Regions
+
+The regions routes are used to get solar and wind forecasts. 
+
+## Sites
+
+The sites routes are used to get site level forecasts. 
+A user can
+- **/sites**: Get information about your sites
+- **/sites/{site_uuid}/forecast**: Get a forecast for a specific site
+- **/sites/{site_uuid}/forecast**: Get and post generation for a specific site
+
+### Authentication and Example
+If you need an authentication route, please get your access token with the following code. 
+You'll need a username and password. 
+```
+export AUTH=$(curl --request POST 
+   --url https://nowcasting-pro.eu.auth0.com/oauth/token 
+   --header 'content-type: application/json' 
+   --data '{"client_id":"TODO", "audience":"https://api.nowcasting.io/", "grant_type":"password", "username":"username", "password":"password"}'
+)
+
+export TOKEN=$(echo "${AUTH}" | jq '.access_token' | tr -d '"')
+```
+You can then use
+```
+curl -X GET 'https://api.quartz.energy/sites' -H "Authorization: Bearer $TOKEN"
+```
+
+"""
+
 server = FastAPI(
     version=version,
     title=title,
     description=description,
+    openapi_tags=tags_metadata,
 )
 origins = os.getenv("ORIGINS", "*").split(",")
 server.add_middleware(
@@ -85,14 +140,6 @@ async def save_api_request_to_db(request: Request, call_next):
     return response
 
 
-def get_db_client() -> DatabaseInterface:
-    """Dependency injection for the database client."""
-    return DatabaseInterface()
-
-
-DBClientDependency = Annotated[DatabaseInterface, Depends(get_db_client)]
-
-
 def validate_source(source: str) -> str:
     """Validate the source parameter."""
     if source not in ["wind", "solar"]:
@@ -105,19 +152,11 @@ def validate_source(source: str) -> str:
 
 ValidSourceDependency = Annotated[str, Depends(validate_source)]
 
-route_tags = [
-    {
-        "name": "Forecast Routes",
-        "description": "Routes for fetching forecast power values.",
-    },
-    {
-        "name": "API Information",
-        "description": "Routes pertaining to the usage and status of the API.",
-    },
-]
 
 
 # === API ROUTES ==============================================================
+server.include_router(sites_router)
+server.include_router(regions_router)
 
 
 class GetHealthResponse(BaseModel):
@@ -315,3 +354,4 @@ def get_regions_route(
     elif source == "solar":
         regions = db.get_solar_regions()
     return GetRegionsResponse(regions=regions)
+
