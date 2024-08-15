@@ -171,7 +171,7 @@ def get_forecast_timeseries_route(
 
 
 @router.get(
-    "/{source}/{region}/forecast/da-csv", tags=["Forecast Routes"], response_class=FileResponse
+    "/{source}/{region}/forecast/csv", tags=["Forecast Routes"], response_class=FileResponse
 )
 def get_forecast_da_csv(
     source: ValidSourceDependency,
@@ -182,20 +182,13 @@ def get_forecast_da_csv(
     """
     Route to get the day ahead forecast as a CSV file.
     """
-    if source == "wind":
-        values = db.get_predicted_wind_power_production_for_location(
-            location=region,
-            forecast_horizon=ForecastHorizon.day_ahead,
-        )
-    elif source == "solar":
-        values = db.get_predicted_solar_power_production_for_location(
-            location=region, forecast_horizon=ForecastHorizon.day_ahead
-        )
-    else:
-        raise Exception(f"Source {source} needs to be wind or solar")
+
+    forcasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
+        source=source, region=region, db=db, auth=auth, forecast_horizon=ForecastHorizon.day_ahead
+    )
 
     # format to dataframe
-    df = format_csv(values)
+    df = format_csv(forcasts.values)
 
     # make file format
     now_ist = pd.Timestamp.now(tz="Asia/Kolkata")

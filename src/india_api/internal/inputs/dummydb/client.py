@@ -20,13 +20,17 @@ class Client(internal.DatabaseInterface):
     """Defines a dummy database that conforms to the DatabaseInterface."""
 
     def get_predicted_solar_power_production_for_location(
-        self, location: str, forecast_horizon: ForecastHorizon = ForecastHorizon.latest
+        self,
+        location: str,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon_minutes: Optional[int] = None,
     ) -> list[internal.PredictedPower]:
         """Gets the predicted solar power production for a location.
 
         Args:
             location: The location to get the predicted solar power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
+            forecast_horizon_minutes: this is not used
         """
         # Get the window
         start, end = get_window()
@@ -46,13 +50,17 @@ class Client(internal.DatabaseInterface):
         return values
 
     def get_predicted_wind_power_production_for_location(
-        self, location: str, forecast_horizon: ForecastHorizon = ForecastHorizon.latest
+        self,
+        location: str,
+        forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
+        forecast_horizon_minutes: Optional[int] = None,
     ) -> list[internal.PredictedPower]:
         """Gets the predicted wind power production for a location.
 
         Args:
             location: The location to get the predicted wind power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
+            forecast_horizon_minutes: this is not used but needed for function signature
         """
         # Get the window
         start, end = get_window()
