@@ -171,7 +171,7 @@ def get_forecast_timeseries_route(
 
 
 @router.get(
-    "/{source}/{region}/forecast/csv", tags=["Forecast Routes"], response_class=FileResponse
+    "/{source}/{region}/forecast/csv", response_class=FileResponse
 )
 def get_forecast_da_csv(
     source: ValidSourceDependency,
