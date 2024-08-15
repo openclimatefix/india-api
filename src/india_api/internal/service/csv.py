@@ -29,7 +29,7 @@ def format_csv(values: list[PredictedPower]) -> pd.DataFrame:
     # combine start and end times
     df["Time"] = df["Start Time [IST]"].astype(str) + " - " + df["End Time [IST]"].astype(str)
 
-    # drop start, end and Time columns and order
+    # drop start and end columns and order
     df = df.drop(columns=["Start Time [IST]", "End Time [IST]"])
     df = df[["Date [IST]", "Time", "PowerKW"]]
 
