@@ -3,14 +3,11 @@
 import logging
 import os
 import sys
-from typing import Annotated
 
-import pytz
-from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from india_api.internal.service.auth import Auth, DummyAuth
 from india_api.internal.service.database_client import get_db_client
 from india_api.internal.service.regions import router as regions_router
 from india_api.internal.service.sites import router as sites_router
@@ -19,18 +16,6 @@ logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
 version = "0.1.32"
 
-local_tz = pytz.timezone("Asia/Kolkata")
-
-if (os.getenv("AUTH0_DOMAIN") is not None) and (os.getenv("AUTH0_API_AUDIENCE") is not None):
-    auth = Auth(
-        domain=os.getenv("AUTH0_DOMAIN"),
-        api_audience=os.getenv("AUTH0_API_AUDIENCE"),
-        algorithm="RS256",
-    )
-else:
-    auth = DummyAuth(domain="dummy", api_audience="dummy", algorithm="dummy")
-# TODO: add scopes for granular access across APIs
-# auth = Auth(domain=os.getenv('AUTH0_DOMAIN'), api_audience=os.getenv('AUTH0_API_AUDIENCE'), scopes={'read:india': ''})
 
 tags_metadata = [
     {
@@ -127,19 +112,6 @@ async def save_api_request_to_db(request: Request, call_next):
     db.save_api_call_to_db(url=url_and_query, email=email)
 
     return response
-
-
-def validate_source(source: str) -> str:
-    """Validate the source parameter."""
-    if source not in ["wind", "solar"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown source {source}; valid sources are 'wind' and 'solar'.",
-        )
-    return source
-
-
-ValidSourceDependency = Annotated[str, Depends(validate_source)]
 
 
 # === API ROUTES ==============================================================
