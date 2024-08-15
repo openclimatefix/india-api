@@ -192,10 +192,13 @@ def get_forecast_da_csv(
 
     # make file format
     now_ist = pd.Timestamp.now(tz="Asia/Kolkata")
+    created_time = max([f.CreatedTime for f in forcasts.values])
+    created_time = created_time.astimezone(local_tz)
     tomorrow_ist = df["Date [IST]"].iloc[0]
     csv_file_path = f"{region}_{source}_da_{tomorrow_ist}.csv"
 
-    description = f"Forecast for {region} for {source} for {tomorrow_ist}. The Forecast was created at {now_ist}"
+    description = f"Forecast for {region} for {source} for {tomorrow_ist}. " \
+                  f"The Forecast was created at {created_time} and downloaded at {now_ist}"
 
     output = df.to_csv(index=False)
     return StreamingResponse(

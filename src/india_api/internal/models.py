@@ -27,12 +27,14 @@ class PredictedPower(BaseModel):
 
     PowerKW: float
     Time: dt.datetime
+    CreatedTime: dt.datetime = Field(exclude=True)
 
     def to_timezone(self, tz: dt.timezone) -> "PredictedPower":
         """Converts the time of this predicted power value to the given timezone."""
         return PredictedPower(
             PowerKW=self.PowerKW,
             Time=self.Time.astimezone(tz=tz),
+            CreatedTime=self.CreatedTime.astimezone(tz=tz),
         )
 
 
