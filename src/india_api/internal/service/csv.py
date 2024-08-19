@@ -39,8 +39,11 @@ def format_csv_and_created_time(values: list[PredictedPower]) -> (pd.DataFrame, 
     # get the max created time
     created_time = df["CreatedTime"].max()
 
+    # change KW to MW
+    df["PowerMW"] = df["PowerKW"] / 1000
+
     # drop and order
     df = df.drop(columns=["CreatedTime", "Start Time [IST]", "End Time [IST]"])
-    df = df[["Date [IST]", "Time", "PowerKW"]]
+    df = df[["Date [IST]", "Time", "PowerMW"]]
 
     return df, created_time
