@@ -4,16 +4,25 @@ import math
 import random
 from uuid import uuid4
 from typing import Optional
+import os
+import sys
+from dotenv import load_dotenv
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from india_api import internal
-from india_api.internal.models import ForecastHorizon
+from src.india_api import internal
+from src.india_api.internal.models import ForecastHorizon
 
 from ._models import DummyDBPredictedPowerProduction
 from ..utils import get_window
 
 # step defines the time interval between each data point
 step: dt.timedelta = dt.timedelta(minutes=15)
+
+load_dotenv()
+
+def is_fake():
+    return int(os.environ.get("FAKE", 0))
 
 
 class Client(internal.DatabaseInterface):
@@ -235,6 +244,8 @@ def _basicSolarPowerProductionFunc(
         UncertaintyHigh=UncertaintyHigh,
     )
 
+if is_fake():
+    _basicSolarPowerProductionFunc()
 
 def _basicWindPowerProductionFunc(
     timeUnix: int, scaleFactor: int = 10000
