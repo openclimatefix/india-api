@@ -92,6 +92,7 @@ class DatabaseInterface(abc.ABC):
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
+        smooth_flag: bool = True,
     ) -> list[PredictedPower]:
         """Returns a list of predicted solar power production for a given location."""
         pass
@@ -107,6 +108,7 @@ class DatabaseInterface(abc.ABC):
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
+        smooth_flag: bool = True,
     ) -> list[PredictedPower]:
         """Returns a list of predicted wind power production for a given location."""
         pass
