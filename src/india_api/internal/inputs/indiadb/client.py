@@ -57,6 +57,7 @@ class Client(internal.DatabaseInterface):
         asset_type: SiteAssetType,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
+        smooth_flag: bool = True,
     ) -> list[internal.PredictedPower]:
         """Gets the predicted power production for a location.
 
@@ -65,6 +66,7 @@ class Client(internal.DatabaseInterface):
             asset_type: The type of asset to get the forecast for
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
             forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
+            smooth_flag: Flag to smooth the forecast
         """
 
         # Get the window
@@ -115,7 +117,8 @@ class Client(internal.DatabaseInterface):
         ]
 
         # smooth the forecasts
-        values = smooth_forecast(values)
+        if smooth_flag:
+            values = smooth_forecast(values)
 
         return values
 
@@ -160,6 +163,7 @@ class Client(internal.DatabaseInterface):
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
+        smooth_flag: bool = True,
     ) -> [internal.PredictedPower]:
         """
         Gets the predicted solar power production for a location.
@@ -168,6 +172,7 @@ class Client(internal.DatabaseInterface):
             location: The location to get the predicted solar power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
             forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
+            smooth_flag: Flag to smooth the forecast
         """
 
         return self.get_predicted_power_production_for_location(
@@ -175,6 +180,7 @@ class Client(internal.DatabaseInterface):
             asset_type=SiteAssetType.pv,
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
+            smooth_flag=True,
         )
 
     def get_predicted_wind_power_production_for_location(
@@ -182,6 +188,7 @@ class Client(internal.DatabaseInterface):
         location: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
+        smooth_flag: bool = True,
     ) -> list[internal.PredictedPower]:
         """
         Gets the predicted wind power production for a location.
@@ -190,6 +197,7 @@ class Client(internal.DatabaseInterface):
             location: The location to get the predicted wind power production for.
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
             forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
+            smooth_flag: Flag to smooth the forecast
         """
 
         return self.get_predicted_power_production_for_location(
@@ -197,6 +205,7 @@ class Client(internal.DatabaseInterface):
             asset_type=SiteAssetType.wind,
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
+            smooth_flag=smooth_flag
         )
 
     def get_actual_solar_power_production_for_location(
