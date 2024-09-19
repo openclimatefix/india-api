@@ -144,9 +144,12 @@ def get_forecast_timeseries_route(
         region: The region to get the forecast for.
         forecast_horizon: The time horizon to get the data for. Can be 'latest', 'horizon' or 'day ahead'
         forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
-        smooth_flag: If the forecast should be smoothed or not.
+        smooth_flag: If the forecast should be smoothed or not. Note for DA forecast this is always False.
     """
     values: list[PredictedPower] = []
+
+    if forecast_horizon == ForecastHorizon.day_ahead:
+        smooth_flag = False
 
     try:
         if source == "wind":
