@@ -62,7 +62,7 @@ class Client(internal.DatabaseInterface):
         """Gets the predicted power production for a location.
 
         Args:
-            location: not used
+            location: the location to get the predicted power production for
             asset_type: The type of asset to get the forecast for
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
             forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
@@ -91,6 +91,16 @@ class Client(internal.DatabaseInterface):
 
             # just select wind site
             sites = [s for s in sites if s.asset_type == asset_type]
+
+            # just select region
+            sites = [site for site in sites if site.region == location]
+
+            if len(sites) == 0:
+                raise HTTPException(
+                    status_code=204,
+                    detail=f"Site for {location=} not found and {asset_type=} not found",
+                )
+
             site = sites[0]
 
             # read actual generations
