@@ -2,11 +2,12 @@
 
 import uvicorn
 import sentry_sdk
+import version
 
 from india_api import internal
 from india_api.internal.config import Config
 from india_api.internal.service import get_db_client, server
-__version__ = "0.1.37"
+=
 
 cfg = Config()
 
@@ -17,7 +18,7 @@ sentry_sdk.init(
 )
 
 sentry_sdk.set_tag("app_name", "india_api")
-sentry_sdk.set_tag("version",__version__)
+sentry_sdk.set_tag("version",version.__version__)
 
 
 match cfg.SOURCE:
