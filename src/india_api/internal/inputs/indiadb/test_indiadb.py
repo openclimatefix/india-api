@@ -32,6 +32,13 @@ class TestIndiaDBClient:
         for record in result:
             assert isinstance(record, PredictedPower)
 
+    def test_get_predicted_wind_power_production_for_location_raise_error(
+        self, client, forecast_values
+    ) -> None:
+
+        with pytest.raises(Exception):
+            result = client.get_predicted_wind_power_production_for_location("testID2")
+
     def test_get_predicted_solar_power_production_for_location(
         self, client, forecast_values
     ) -> None:
