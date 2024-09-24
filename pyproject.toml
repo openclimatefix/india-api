@@ -26,7 +26,7 @@ dependencies = [
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
     "numpy==1.26.4",
-    "sentry-sdk == ^2.1.1",
+    "sentry-sdk == 2.1.1",
 ]
 
 [project.optional-dependencies]
