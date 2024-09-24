@@ -89,11 +89,8 @@ class Client(internal.DatabaseInterface):
         with self._get_session() as session:
             sites = get_sites_by_country(session, country="india")
 
-            # just select wind site
-            sites = [s for s in sites if s.asset_type == asset_type]
-
-            # just select region
-            sites = [site for site in sites if site.region == location]
+            # just select wind site and region
+            sites = [s for s in sites if (s.asset_type == asset_type) and (s.region == location)]
 
             if len(sites) == 0:
                 raise HTTPException(
