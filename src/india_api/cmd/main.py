@@ -1,13 +1,24 @@
 """The main entrypoint to the application."""
 
 import uvicorn
+import sentry_sdk
 
 from india_api import internal
 from india_api.internal.config import Config
-from india_api.internal.service import get_db_client, server
+from india_api.internal.service import get_db_client, server, version
 
 
 cfg = Config()
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    environment=os.getenv("ENVIRONMENT", "local"),
+    traces_sample_rate=1
+)
+
+sentry_sdk.set_tag("app_name", "india_api")
+sentry_sdk.set_tag("version",version)
+
 
 match cfg.SOURCE:
     case "indiadb":

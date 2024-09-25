@@ -25,7 +25,8 @@ dependencies = [
     "pytz >= 2023.3",
     "structlog >= 23.2.0",
     "uvicorn >= 0.24.0",
-    "numpy==1.26.4"
+    "numpy==1.26.4",
+    "sentry-sdk == 2.1.1",
 ]
 
 [project.optional-dependencies]
