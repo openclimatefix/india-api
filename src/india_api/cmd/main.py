@@ -2,11 +2,10 @@
 
 import uvicorn
 import sentry_sdk
-import version 
 
 from india_api import internal
 from india_api.internal.config import Config
-from india_api.internal.service import get_db_client, server
+from india_api.internal.service import get_db_client, server, version
 
 
 cfg = Config()
