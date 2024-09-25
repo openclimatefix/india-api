@@ -17,7 +17,7 @@ sentry_sdk.init(
 )
 
 sentry_sdk.set_tag("app_name", "india_api")
-sentry_sdk.set_tag("version",version.__version__)
+sentry_sdk.set_tag("version",version)
 
 
 match cfg.SOURCE:
