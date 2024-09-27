@@ -1,5 +1,6 @@
 """The main entrypoint to the application."""
 
+import os
 import uvicorn
 import sentry_sdk
 
