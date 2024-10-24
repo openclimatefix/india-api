@@ -87,7 +87,7 @@ class Client(internal.DatabaseInterface):
 
         # get site uuid
         with self._get_session() as session:
-            sites = get_sites_by_country(session, country="india")
+            sites = get_sites_by_country(session, country="india", client_name=location)
 
             # just select wind site and region
             sites = [s for s in sites if (s.asset_type == asset_type) and (s.region == location)]
@@ -141,7 +141,7 @@ class Client(internal.DatabaseInterface):
 
         # get site uuid
         with self._get_session() as session:
-            sites = get_sites_by_country(session, country="india")
+            sites = get_sites_by_country(session, country="india", client_name=location)
 
             # just select wind site
             sites = [site for site in sites if site.asset_type == asset_type]
