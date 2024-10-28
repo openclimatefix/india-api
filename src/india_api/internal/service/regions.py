@@ -31,6 +31,7 @@ class GetSourcesResponse(BaseModel):
 @router.get(
     "/sources",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_sources_route(auth: dict = Depends(auth)) -> GetSourcesResponse:
     """Function for the sources route."""
@@ -60,6 +61,7 @@ ValidSourceDependency = Annotated[str, Depends(validate_source)]
 @router.get(
     "/{source}/regions",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_regions_route(
     source: ValidSourceDependency,
@@ -85,6 +87,7 @@ class GetHistoricGenerationResponse(BaseModel):
 @router.get(
     "/{source}/{region}/generation",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_historic_timeseries_route(
     source: ValidSourceDependency,
@@ -126,6 +129,7 @@ class GetForecastGenerationResponse(BaseModel):
 @router.get(
     "/{source}/{region}/forecast",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_forecast_timeseries_route(
     source: ValidSourceDependency,
@@ -178,7 +182,9 @@ def get_forecast_timeseries_route(
 
 
 @router.get(
-    "/{source}/{region}/forecast/csv", response_class=FileResponse
+    "/{source}/{region}/forecast/csv",
+    response_class=FileResponse,
+    include_in_schema=False,
 )
 def get_forecast_da_csv(
     source: ValidSourceDependency,
@@ -191,7 +197,12 @@ def get_forecast_da_csv(
     """
 
     forcasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
-        source=source, region=region, db=db, auth=auth, forecast_horizon=ForecastHorizon.day_ahead, smooth_flag=False
+        source=source,
+        region=region,
+        db=db,
+        auth=auth,
+        forecast_horizon=ForecastHorizon.day_ahead,
+        smooth_flag=False,
     )
 
     # format to dataframe
@@ -202,8 +213,10 @@ def get_forecast_da_csv(
     tomorrow_ist = df["Date [IST]"].iloc[0]
     csv_file_path = f"{region}_{source}_da_{tomorrow_ist}.csv"
 
-    description = f"Forecast for {region} for {source} for {tomorrow_ist}. " \
-                  f"The Forecast was created at {created_time} and downloaded at {now_ist}"
+    description = (
+        f"Forecast for {region} for {source} for {tomorrow_ist}. "
+        f"The Forecast was created at {created_time} and downloaded at {now_ist}"
+    )
 
     output = df.to_csv(index=False)
     return StreamingResponse(
