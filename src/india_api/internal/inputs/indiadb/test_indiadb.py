@@ -68,12 +68,12 @@ class TestIndiaDBClient:
     def test_get_wind_regions(self, client) -> None:
         result = client.get_wind_regions()
         assert len(result) == 1
-        assert result[0] == "ruvnl"
+        assert result[0] == "rajasthan"
 
     def test_get_solar_regions(self, client) -> None:
         result = client.get_solar_regions()
         assert len(result) == 1
-        assert result[0] == "ruvnl"
+        assert result[0] == "rajasthan"
 
     def test_get_sites(self, client, sites) -> None:
         sites_from_api = client.get_sites(email="test@test.com")
