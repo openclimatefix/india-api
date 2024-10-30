@@ -66,7 +66,7 @@ def sites(db_session):
         asset_type="pv",
         country="india",
         region='testID',
-        client_site_name='ruvnl_pv_testID1'
+        client_site_name='rajasthan_pv_testID1'
     )
     db_session.add(site)
     sites.append(site)
@@ -81,7 +81,7 @@ def sites(db_session):
         asset_type="wind",
         country="india",
         region='testID',
-        client_site_name = 'ruvnl_wind_testID'
+        client_site_name = 'rajasthan_wind_testID'
     )
     db_session.add(site)
     sites.append(site)
