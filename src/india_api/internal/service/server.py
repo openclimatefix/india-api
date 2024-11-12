@@ -14,7 +14,7 @@ from india_api.internal.service.sites import router as sites_router
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.43"
+version = "0.1.45"
 
 
 tags_metadata = [
@@ -28,12 +28,13 @@ tags_metadata = [
         "Each site will have one source of energy "
         "and there is forecast and generation data for each site. ",
     },
-    {
-        "name": "Regions",
-        "description": "A region is an area of land e.g. Alaska in the USA. "
-        "There is forecast and generation data for each region "
-        "and there may be different sources of energy in one region.",
-    },
+    # I want to keep this here, as we might add this back in the future
+    # {
+    #     "name": "Regions",
+    #     "description": "A region is an area of land e.g. Alaska in the USA. "
+    #     "There is forecast and generation data for each region "
+    #     "and there may be different sources of energy in one region.",
+    # },
 ]
 
 title = "India API"
