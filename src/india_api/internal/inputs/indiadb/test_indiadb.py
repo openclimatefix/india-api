@@ -84,7 +84,7 @@ class TestIndiaDBClient:
         assert len(sites_from_api) == 0
 
     def test_get_site_forecast(self, client, sites, forecast_values) -> None:
-        out = client.get_site_forecast(site_uuid=sites[0].site_uuid, email="test@test.com")
+        out = client.get_site_forecast(site_uuid=str(sites[0].site_uuid), email="test@test.com")
         assert len(out) > 0
 
     def test_get_site_forecast_no_forecast_values(self, client, sites) -> None:
@@ -96,7 +96,7 @@ class TestIndiaDBClient:
             _ = client.get_site_forecast(site_uuid=sites[0].site_uuid, email="test2@test.com")
 
     def test_get_site_generation(self, client, sites, generations) -> None:
-        out = client.get_site_generation(site_uuid=sites[0].site_uuid, email="test@test.com")
+        out = client.get_site_generation(site_uuid=str(sites[0].site_uuid), email="test@test.com")
         assert len(out) > 0
 
     def test_post_site_generation(self, client, sites) -> None:

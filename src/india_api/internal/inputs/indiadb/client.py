@@ -4,6 +4,7 @@ import pandas as pd
 import logging
 from typing import Optional
 from fastapi import HTTPException
+from uuid import UUID
 
 from pvsite_datamodel import DatabaseConnection
 from pvsite_datamodel.read import (
@@ -271,6 +272,9 @@ class Client(internal.DatabaseInterface):
         with self._get_session() as session:
             check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
 
+            if isinstance(site_uuid, str):
+                site_uuid = UUID(site_uuid)
+
             values = get_latest_forecast_values_by_site(
                 session,
                 site_uuids=[site_uuid],
@@ -302,6 +306,9 @@ class Client(internal.DatabaseInterface):
 
         with self._get_session() as session:
             check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
+
+            if isinstance(site_uuid, str):
+                site_uuid = UUID(site_uuid)
 
             # read actual generations
             values = get_pv_generation_by_sites(
