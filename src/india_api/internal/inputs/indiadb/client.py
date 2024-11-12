@@ -187,7 +187,7 @@ class Client(internal.DatabaseInterface):
             asset_type=SiteAssetType.pv,
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
-            smooth_flag=True,
+            smooth_flag=smooth_flag,
         )
 
     def get_predicted_wind_power_production_for_location(
