@@ -29,10 +29,10 @@ tags_metadata = [
         "and there is forecast and generation data for each site. ",
     },
     {
-         "name": "Regions",
-         "description": "A region is an area of land e.g. Alaska in the USA. "
-         "There is forecast and generation data for each region "
-         "and there may be different sources of energy in one region.",
+        "name": "Regions",
+        "description": "A region is an area of land e.g. Alaska in the USA. "
+        "There is forecast and generation data for each region "
+        "and there may be different sources of energy in one region.",
     },
 ]
 
