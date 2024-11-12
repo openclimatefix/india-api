@@ -28,13 +28,12 @@ tags_metadata = [
         "Each site will have one source of energy "
         "and there is forecast and generation data for each site. ",
     },
-    # I want to keep this here, as we might add this back in the future
-    # {
-    #     "name": "Regions",
-    #     "description": "A region is an area of land e.g. Alaska in the USA. "
-    #     "There is forecast and generation data for each region "
-    #     "and there may be different sources of energy in one region.",
-    # },
+    {
+         "name": "Regions",
+         "description": "A region is an area of land e.g. Alaska in the USA. "
+         "There is forecast and generation data for each region "
+         "and there may be different sources of energy in one region.",
+    },
 ]
 
 title = "India API"
