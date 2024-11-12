@@ -31,6 +31,7 @@ class GetSourcesResponse(BaseModel):
 @router.get(
     "/sources",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_sources_route(auth: dict = Depends(auth)) -> GetSourcesResponse:
     """Function for the sources route."""
@@ -60,6 +61,7 @@ ValidSourceDependency = Annotated[str, Depends(validate_source)]
 @router.get(
     "/{source}/regions",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_regions_route(
     source: ValidSourceDependency,
@@ -85,6 +87,7 @@ class GetHistoricGenerationResponse(BaseModel):
 @router.get(
     "/{source}/{region}/generation",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_historic_timeseries_route(
     source: ValidSourceDependency,
@@ -126,6 +129,7 @@ class GetForecastGenerationResponse(BaseModel):
 @router.get(
     "/{source}/{region}/forecast",
     status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 def get_forecast_timeseries_route(
     source: ValidSourceDependency,
@@ -180,6 +184,7 @@ def get_forecast_timeseries_route(
 @router.get(
     "/{source}/{region}/forecast/csv",
     response_class=FileResponse,
+    include_in_schema=False,
 )
 def get_forecast_da_csv(
     source: ValidSourceDependency,
