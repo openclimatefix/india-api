@@ -306,6 +306,8 @@ class Client(internal.DatabaseInterface):
         with self._get_session() as session:
             check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
 
+            site_uuid = UUID(site_uuid)
+
             # read actual generations
             values = get_pv_generation_by_sites(
                 session=session, site_uuids=[site_uuid], start_utc=start, end_utc=end
