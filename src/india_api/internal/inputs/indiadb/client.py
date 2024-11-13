@@ -56,6 +56,7 @@ class Client(internal.DatabaseInterface):
         self,
         location: str,
         asset_type: SiteAssetType,
+        ml_model_name: str,
         forecast_horizon: ForecastHorizon = ForecastHorizon.latest,
         forecast_horizon_minutes: Optional[int] = None,
         smooth_flag: bool = True,
@@ -65,6 +66,7 @@ class Client(internal.DatabaseInterface):
         Args:
             location: the location to get the predicted power production for
             asset_type: The type of asset to get the forecast for
+            ml_model_name: The name of the model to get the forecast from
             forecast_horizon: The time horizon to get the data for. Can be latest or day ahead
             forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
             smooth_flag: Flag to smooth the forecast
@@ -109,6 +111,7 @@ class Client(internal.DatabaseInterface):
                 day_ahead_hours=day_ahead_hours,
                 day_ahead_timezone_delta_hours=day_ahead_timezone_delta_hours,
                 forecast_horizon_minutes=forecast_horizon_minutes,
+                model_name=ml_model_name
             )
             forecast_values: [ForecastValueSQL] = values[site.site_uuid]
 
@@ -183,12 +186,17 @@ class Client(internal.DatabaseInterface):
             smooth_flag: Flag to smooth the forecast
         """
 
+        # set this to be hard coded for now
+        model_name = 'pvnet_india'
+
+
         return self.get_predicted_power_production_for_location(
             location=location,
             asset_type=SiteAssetType.pv,
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
             smooth_flag=smooth_flag,
+            model_name=model_name
         )
 
     def get_predicted_wind_power_production_for_location(
@@ -208,12 +216,16 @@ class Client(internal.DatabaseInterface):
             smooth_flag: Flag to smooth the forecast
         """
 
+        # set this to be hard coded for now
+        model_name = 'windnet_india'
+
         return self.get_predicted_power_production_for_location(
             location=location,
             asset_type=SiteAssetType.wind,
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
-            smooth_flag=smooth_flag
+            smooth_flag=smooth_flag,
+            model_name=model_name,
         )
 
     def get_actual_solar_power_production_for_location(
@@ -266,6 +278,9 @@ class Client(internal.DatabaseInterface):
 
         # TODO feels like there is some duplicated code here which could be refactored
 
+        # hard coded model name
+        ml_model_name = 'pvnet_ad_sites'
+
         # Get the window
         start, _ = get_window()
 
@@ -279,6 +294,7 @@ class Client(internal.DatabaseInterface):
                 session,
                 site_uuids=[site_uuid],
                 start_utc=start,
+                model_name=ml_model_name
             )
             forecast_values: [ForecastValueSQL] = values[site_uuid]
 
