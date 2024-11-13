@@ -65,8 +65,8 @@ def sites(db_session):
         ml_id=1,
         asset_type="pv",
         country="india",
-        region='testID',
-        client_site_name='ruvnl_pv_testID1'
+        region="testID",
+        client_site_name="ruvnl_pv_testID1",
     )
     db_session.add(site)
     sites.append(site)
@@ -80,8 +80,8 @@ def sites(db_session):
         ml_id=2,
         asset_type="wind",
         country="india",
-        region='testID',
-        client_site_name = 'ruvnl_wind_testID'
+        region="testID",
+        client_site_name="ruvnl_wind_testID",
     )
     db_session.add(site)
     sites.append(site)
@@ -89,7 +89,7 @@ def sites(db_session):
     db_session.commit()
 
     # create user
-    user = get_user_by_email(session=db_session, email='test@test.com')
+    user = get_user_by_email(session=db_session, email="test@test.com")
     user.site_group.sites = sites
 
     db_session.commit()

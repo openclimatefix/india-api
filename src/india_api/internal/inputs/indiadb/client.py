@@ -111,7 +111,7 @@ class Client(internal.DatabaseInterface):
                 day_ahead_hours=day_ahead_hours,
                 day_ahead_timezone_delta_hours=day_ahead_timezone_delta_hours,
                 forecast_horizon_minutes=forecast_horizon_minutes,
-                model_name=ml_model_name
+                model_name=ml_model_name,
             )
             forecast_values: [ForecastValueSQL] = values[site.site_uuid]
 
@@ -187,8 +187,7 @@ class Client(internal.DatabaseInterface):
         """
 
         # set this to be hard coded for now
-        model_name = 'pvnet_india'
-
+        model_name = "pvnet_india"
 
         return self.get_predicted_power_production_for_location(
             location=location,
@@ -196,7 +195,7 @@ class Client(internal.DatabaseInterface):
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
             smooth_flag=smooth_flag,
-            model_name=model_name
+            model_name=model_name,
         )
 
     def get_predicted_wind_power_production_for_location(
@@ -217,7 +216,7 @@ class Client(internal.DatabaseInterface):
         """
 
         # set this to be hard coded for now
-        model_name = 'windnet_india'
+        model_name = "windnet_india"
 
         return self.get_predicted_power_production_for_location(
             location=location,
@@ -273,13 +272,13 @@ class Client(internal.DatabaseInterface):
 
             return sites
 
-    def get_site_forecast(self, site_uuid: str, email:str) -> list[internal.PredictedPower]:
+    def get_site_forecast(self, site_uuid: str, email: str) -> list[internal.PredictedPower]:
         """Get a forecast for a site, this is for a solar site"""
 
         # TODO feels like there is some duplicated code here which could be refactored
 
         # hard coded model name
-        ml_model_name = 'pvnet_ad_sites'
+        ml_model_name = "pvnet_ad_sites"
 
         # Get the window
         start, _ = get_window()
@@ -291,10 +290,7 @@ class Client(internal.DatabaseInterface):
                 site_uuid = UUID(site_uuid)
 
             values = get_latest_forecast_values_by_site(
-                session,
-                site_uuids=[site_uuid],
-                start_utc=start,
-                model_name=ml_model_name
+                session, site_uuids=[site_uuid], start_utc=start, model_name=ml_model_name
             )
             forecast_values: [ForecastValueSQL] = values[site_uuid]
 
@@ -312,7 +308,7 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def get_site_generation(self, site_uuid: str, email:str) -> list[internal.ActualPower]:
+    def get_site_generation(self, site_uuid: str, email: str) -> list[internal.ActualPower]:
         """Get the generation for a site, this is for a solar site"""
 
         # TODO feels like there is some duplicated code here which could be refactored
@@ -344,7 +340,9 @@ class Client(internal.DatabaseInterface):
 
         return values
 
-    def post_site_generation(self, site_uuid: str, generation: list[internal.ActualPower], email:str):
+    def post_site_generation(
+        self, site_uuid: str, generation: list[internal.ActualPower], email: str
+    ):
         """Post generation for a site"""
 
         with self._get_session() as session:
