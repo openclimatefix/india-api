@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import pytest
 from pvsite_datamodel.sqlmodels import Base, ForecastSQL, ForecastValueSQL, GenerationSQL, SiteSQL
 from pvsite_datamodel.read.user import get_user_by_email
+from pvsite_datamodel.read.model import get_or_create_model
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from testcontainers.postgres import PostgresContainer
@@ -65,8 +66,8 @@ def sites(db_session):
         ml_id=1,
         asset_type="pv",
         country="india",
-        region='testID',
-        client_site_name='ruvnl_pv_testID1'
+        region="testID",
+        client_site_name="ruvnl_pv_testID1",
     )
     db_session.add(site)
     sites.append(site)
@@ -80,8 +81,8 @@ def sites(db_session):
         ml_id=2,
         asset_type="wind",
         country="india",
-        region='testID',
-        client_site_name = 'ruvnl_wind_testID'
+        region="testID",
+        client_site_name="ruvnl_wind_testID",
     )
     db_session.add(site)
     sites.append(site)
@@ -89,7 +90,7 @@ def sites(db_session):
     db_session.commit()
 
     # create user
-    user = get_user_by_email(session=db_session, email='test@test.com')
+    user = get_user_by_email(session=db_session, email="test@test.com")
     user.site_group.sites = sites
 
     db_session.commit()
@@ -123,6 +124,23 @@ def generations(db_session, sites):
 @pytest.fixture()
 def forecast_values(db_session, sites):
     """Create some fake forecast values"""
+
+    make_fake_forecast_values(db_session, sites, "pvnet_india")
+
+@pytest.fixture()
+def forecast_values_wind(db_session, sites):
+    """Create some fake forecast values"""
+
+    make_fake_forecast_values(db_session, sites, "windnet_india")
+
+@pytest.fixture()
+def forecast_values_site(db_session, sites):
+    """Create some fake forecast values"""
+
+    make_fake_forecast_values(db_session, sites, "pvnet_ad_sites")
+
+
+def make_fake_forecast_values(db_session, sites, model_name):
     forecast_values = []
     forecast_version: str = "0.0.0"
 
@@ -133,6 +151,9 @@ def forecast_values(db_session, sites):
 
     # To make things trickier we make a second forecast at the same for one of the timestamps.
     timestamps = timestamps + timestamps[-1:]
+
+    # get model
+    ml_model = get_or_create_model(db_session, model_name)
 
     for site in sites:
         for timestamp in timestamps:
@@ -154,6 +175,7 @@ def forecast_values(db_session, sites):
                     end_utc=timestamp + timedelta(minutes=horizon + duration),
                     horizon_minutes=horizon,
                 )
+                forecast_value.ml_model = ml_model
 
                 forecast_values.append(forecast_value)
 

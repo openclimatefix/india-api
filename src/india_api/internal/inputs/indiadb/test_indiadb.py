@@ -23,7 +23,7 @@ def client(engine, db_session):
 
 class TestIndiaDBClient:
     def test_get_predicted_wind_power_production_for_location(
-        self, client, forecast_values
+        self, client, forecast_values_wind
     ) -> None:
         locID = "testID"
         result = client.get_predicted_wind_power_production_for_location(locID)
@@ -33,7 +33,7 @@ class TestIndiaDBClient:
             assert isinstance(record, PredictedPower)
 
     def test_get_predicted_wind_power_production_for_location_raise_error(
-        self, client, forecast_values
+        self, client, forecast_values_wind
     ) -> None:
 
         with pytest.raises(Exception):
@@ -83,7 +83,7 @@ class TestIndiaDBClient:
         sites_from_api = client.get_sites(email="test2@test.com")
         assert len(sites_from_api) == 0
 
-    def test_get_site_forecast(self, client, sites, forecast_values) -> None:
+    def test_get_site_forecast(self, client, sites, forecast_values_site) -> None:
         out = client.get_site_forecast(site_uuid=str(sites[0].site_uuid), email="test@test.com")
         assert len(out) > 0
 
