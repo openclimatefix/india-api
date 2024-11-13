@@ -195,7 +195,7 @@ class Client(internal.DatabaseInterface):
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
             smooth_flag=smooth_flag,
-            model_name=model_name,
+            ml_model_name=model_name,
         )
 
     def get_predicted_wind_power_production_for_location(
@@ -224,7 +224,7 @@ class Client(internal.DatabaseInterface):
             forecast_horizon=forecast_horizon,
             forecast_horizon_minutes=forecast_horizon_minutes,
             smooth_flag=smooth_flag,
-            model_name=model_name,
+            ml_model_name=model_name,
         )
 
     def get_actual_solar_power_production_for_location(
