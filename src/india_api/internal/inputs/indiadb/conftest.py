@@ -131,7 +131,7 @@ def forecast_values(db_session, sites):
 def forecast_values_wind(db_session, sites):
     """Create some fake forecast values"""
 
-    make_fake_forecast_values(db_session, sites, "windnet_india")
+    make_fake_forecast_values(db_session, sites, "windnet_india_adjust")
 
 @pytest.fixture()
 def forecast_values_site(db_session, sites):
