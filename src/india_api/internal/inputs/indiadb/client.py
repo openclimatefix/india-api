@@ -216,7 +216,7 @@ class Client(internal.DatabaseInterface):
         """
 
         # set this to be hard coded for now
-        model_name = "windnet_india"
+        model_name = "windnet_india_adjust"
 
         return self.get_predicted_power_production_for_location(
             location=location,
