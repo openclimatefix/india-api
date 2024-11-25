@@ -106,7 +106,7 @@ class Client(internal.DatabaseInterface):
 
             if site.ml_model is not None:
                 ml_model_name = site.ml_model.model_name
-            log.info(f"Using ml model {site.ml_model.model_name}")
+            log.info(f"Using ml model {ml_model_name}")
 
             # read actual generations
             values = get_latest_forecast_values_by_site(
@@ -295,7 +295,7 @@ class Client(internal.DatabaseInterface):
             site = get_site_by_uuid(session=session, site_uuid=site_uuid)
             if site.ml_model is not None:
                 ml_model_name = site.ml_model.model_name
-            log.info(f"Using ml model {site.ml_model.model_name}")
+            log.info(f"Using ml model {ml_model_name}")
 
             if isinstance(site_uuid, str):
                 site_uuid = UUID(site_uuid)
