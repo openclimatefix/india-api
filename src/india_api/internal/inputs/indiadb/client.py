@@ -105,7 +105,7 @@ class Client(internal.DatabaseInterface):
             site = sites[0]
 
             if site.ml_model is not None:
-                ml_model_name = site.ml_model.model_name
+                ml_model_name = site.ml_model.name
             log.info(f"Using ml model {ml_model_name}")
 
             # read actual generations
@@ -294,7 +294,7 @@ class Client(internal.DatabaseInterface):
             # get site and the get the ml model name
             site = get_site_by_uuid(session=session, site_uuid=site_uuid)
             if site.ml_model is not None:
-                ml_model_name = site.ml_model.model_name
+                ml_model_name = site.ml_model.name
             log.info(f"Using ml model {ml_model_name}")
 
             if isinstance(site_uuid, str):
