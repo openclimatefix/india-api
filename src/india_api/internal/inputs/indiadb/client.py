@@ -13,6 +13,7 @@ from pvsite_datamodel.read import (
     get_pv_generation_by_sites,
     get_user_by_email,
     get_sites_from_user,
+    get_site_by_uuid,
 )
 from pvsite_datamodel.write.generation import insert_generation_values
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
@@ -102,6 +103,10 @@ class Client(internal.DatabaseInterface):
                 )
 
             site = sites[0]
+
+            if site.ml_model is not None:
+                ml_model_name = site.ml_model.model_name
+            log.info(f"Using ml model {site.ml_model.model_name}")
 
             # read actual generations
             values = get_latest_forecast_values_by_site(
@@ -285,6 +290,12 @@ class Client(internal.DatabaseInterface):
 
         with self._get_session() as session:
             check_user_has_access_to_site(session=session, email=email, site_uuid=site_uuid)
+
+            # get site and the get the ml model name
+            site = get_site_by_uuid(session=session, site_uuid=site_uuid)
+            if site.ml_model is not None:
+                ml_model_name = site.ml_model.model_name
+            log.info(f"Using ml model {site.ml_model.model_name}")
 
             if isinstance(site_uuid, str):
                 site_uuid = UUID(site_uuid)
