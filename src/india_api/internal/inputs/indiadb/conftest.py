@@ -176,6 +176,7 @@ def make_fake_forecast_values(db_session, sites, model_name):
                     horizon_minutes=horizon,
                 )
                 forecast_value.ml_model = ml_model
+                site.ml_model = ml_model
 
                 forecast_values.append(forecast_value)
 
