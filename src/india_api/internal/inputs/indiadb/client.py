@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 from fastapi import HTTPException
 from uuid import UUID
+import sentry_sdk
 
 from pvsite_datamodel import DatabaseConnection
 from pvsite_datamodel.read import (
@@ -370,6 +371,31 @@ class Client(internal.DatabaseInterface):
                 )
 
             generation_values_df = pd.DataFrame(generations)
+            capacity_factor = 1.1
+            site = get_site_by_uuid(session=session, site_uuid=site_uuid)
+            site_capacity_kw = site.capacity_kw
+            exceeded_capacity = generation_values_df[
+                generation_values_df["power_kw"] > site_capacity_kw * capacity_factor
+            ]
+            if len(exceeded_capacity) > 0:
+                # alert Sentry and return 422 validation error
+                sentry_sdk.capture_message(
+                    f"Error processing generation values. "
+                    f"One (or more) values are larger than {capacity_factor} "
+                    f"times the site capacity of {site_capacity_kw} kWp. "
+                    # f"User: {auth['https://openclimatefix.org/email']}"
+                    f"Site: {site_uuid}"
+                )
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        f"Error processing generation values. "
+                        f"One (or more) values are larger than {capacity_factor} "
+                        f"times the site capacity of {site_capacity_kw} kWp. "
+                        "Please adjust this generation value, the site capacity, "
+                        "or contact quartz.support@openclimatefix.org."
+                    ),
+                )
 
             insert_generation_values(session, generation_values_df)
             session.commit()
