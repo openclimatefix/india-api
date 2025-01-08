@@ -1,4 +1,5 @@
 """India DB client that conforms to the DatabaseInterface."""
+import os
 import datetime as dt
 import pandas as pd
 import logging
@@ -371,7 +372,7 @@ class Client(internal.DatabaseInterface):
                 )
 
             generation_values_df = pd.DataFrame(generations)
-            capacity_factor = 1.1
+            capacity_factor = float(os.getenv("ERROR_GENERATION_CAPACITY_FACTOR", 1.1))
             site = get_site_by_uuid(session=session, site_uuid=site_uuid)
             site_capacity_kw = site.capacity_kw
             exceeded_capacity = generation_values_df[
