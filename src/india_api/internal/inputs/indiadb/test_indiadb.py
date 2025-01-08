@@ -1,4 +1,5 @@
 import logging
+from fastapi import HTTPException
 import pytest
 
 from india_api.internal import PredictedPower, ActualPower
@@ -105,3 +106,14 @@ class TestIndiaDBClient:
             generation=[ActualPower(Time=1, PowerKW=1)],
             email="test@test.com",
         )
+
+    def test_post_site_generation_exceding_max_capacity(self, client, sites):
+        try:
+            client.post_site_generation(
+                site_uuid=sites[0].site_uuid,
+                generation=[ActualPower(Time=1, PowerKW=1000)],
+                email="test@test.com",
+            )
+        except HTTPException as e:
+            assert e.status_code == 422 
+            assert "generation values" in str(e.detail)
