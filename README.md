@@ -18,7 +18,7 @@ so there is nothing to configure.
 Download the latest image from github container regiimage from github container registry:
 
 ```sh
-$ docker run ghcr.io/openclimatefix/fake-api:latest
+$ docker run ghcr.io/openclimatefix/india-api:latest
 ```
 
 ### Using python(v3.11.x)
