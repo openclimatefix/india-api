@@ -70,8 +70,8 @@ def post_generation(
     db: DBClientDependency,
     auth: dict = Depends(auth),
 ):
-    """Get sites"""
-    """
+    """Get sites
+    
     ### This route is used to input actual PV/Wind generation.
 
     Users will upload actual PV/Wind generation
