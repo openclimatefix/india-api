@@ -78,7 +78,7 @@ def post_generation(
     readings in kilowatts (kW) at intervals throughout a given day.
     For example: the average power in kW every 5,10,15 or 30 minutes.
 
-    The actual_generation_kw values should be non-negative floating point numbers
+    The PowerKW values should be non-negative floating point numbers
     (e.g., 0.0, 1.5, 10.753, etc).
 
     #### Parameters
@@ -89,13 +89,13 @@ def post_generation(
             "site_uuid": "0cafe3ed-0c5c-4ef0-9a53-e3789e8c8fc9",
             "generation": [
                 {
-                    "datetime_utc": "2024-02-09T17:19:35.986Z",
-                    "actual_generation_kw": 1.452
+                    "Time": "2024-02-09T17:19:35.986Z",
+                    "PowerKW": 1.452
                 }
             ]
         }
 
-    All datetimes are in UTC.
+    All timestamps (Time) are in UTC.
 
     **Note**: Users should wait up to 7 days to start experiencing the full
     effects from using live PV data.
