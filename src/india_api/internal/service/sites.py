@@ -97,7 +97,7 @@ def post_generation(
 
     All timestamps (Time) are in UTC.
 
-    **Note**: Users should wait up to 7 days to start experiencing the full
+    **Note**: Users should wait up to 1 day(s) to start experiencing the full
     effects from using live PV data.
     """
 

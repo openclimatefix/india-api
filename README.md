@@ -10,7 +10,7 @@ Defines an API to help with building frontends pertaining to displaying wind and
 ### Configuration
 
 The application is configured via the use of environment variables.
-For the environment variable please set: `export DB_URL=postgresql://main:vPV%xXs6AiviZ8WP@127.0.0.1:5433/indiadbdevelopment` in bash
+For the environment variable please set: `export DB_URL=postgresql://localhost:5432` in bash
 Currently there is only one source adaptor
 so there is nothing to configure.
 
