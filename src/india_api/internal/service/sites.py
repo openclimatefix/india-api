@@ -70,7 +70,36 @@ def post_generation(
     db: DBClientDependency,
     auth: dict = Depends(auth),
 ):
-    """Get sites"""
+    """Get sites
+    
+    ### This route is used to input actual PV/Wind generation.
+
+    Users will upload actual PV/Wind generation
+    readings in kilowatts (kW) at intervals throughout a given day.
+    For example: the average power in kW every 5,10,15 or 30 minutes.
+
+    The PowerKW values should be non-negative floating point numbers
+    (e.g., 0.0, 1.5, 10.753, etc).
+
+    #### Parameters
+    - **site_uuid**: The unique identifier for the site.
+    - **generation**: The actual PV generation values for the site.
+        You can add one at a time or many. For example:
+        {
+            "site_uuid": "0cafe3ed-0c5c-4ef0-9a53-e3789e8c8fc9",
+            "generation": [
+                {
+                    "Time": "2024-02-09T17:19:35.986Z",
+                    "PowerKW": 1.452
+                }
+            ]
+        }
+
+    All timestamps (Time) are in UTC.
+
+    **Note**: Users should wait up to 1 day(s) to start experiencing the full
+    effects from using live PV data.
+    """
 
     # get email from auth
     email = auth["https://openclimatefix.org/email"]
