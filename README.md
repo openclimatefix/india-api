@@ -16,10 +16,17 @@ so there is nothing to configure.
 
 ### Using docker
 
-Download the latest image from github container regiimage from github container registry:
+You can either download the latest image from GitHub container registry:
 
 ```sh
-$ docker run ghcr.io/openclimatefix/fake-api:latest
+$ docker run ghcr.io/openclimatefix/india-api:latest
+```
+
+Or build and run locally using the Containerfile:
+
+```sh
+$ docker build -t india-api .
+$ docker run india-api
 ```
 
 ### Using python(v3.11.x)
