@@ -51,6 +51,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "anxkhn",
+      "name": "Anas Khan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/83116240?v=4",
+      "profile": "http://anaskhan.me",
+      "contributions": [
+        "infra"
+      ]
     }
   ],
   "contributorsPerLine": 7,
