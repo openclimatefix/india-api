@@ -14,7 +14,7 @@ from india_api.internal.service.sites import router as sites_router
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
-version = "0.1.51"
+version = "0.1.52"
 
 
 tags_metadata = [
