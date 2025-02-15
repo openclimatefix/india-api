@@ -250,11 +250,11 @@ class Client(internal.DatabaseInterface):
 
     def get_wind_regions(self) -> list[str]:
         """Gets the valid wind regions."""
-        return ["ruvnl"]
+        return ["rajasthan"]
 
     def get_solar_regions(self) -> list[str]:
         """Gets the valid solar regions."""
-        return ["ruvnl"]
+        return ["rajasthan"]
 
     def get_sites(self, email: str) -> list[internal.Site]:
         """Get a list of sites"""
