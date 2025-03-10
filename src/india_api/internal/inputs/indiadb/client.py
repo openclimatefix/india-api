@@ -20,6 +20,8 @@ from pvsite_datamodel.read import (
 from pvsite_datamodel.write.generation import insert_generation_values
 from pvsite_datamodel.sqlmodels import SiteAssetType, ForecastValueSQL
 from pvsite_datamodel.write.database import save_api_call_to_db
+from pvsite_datamodel.write.user_and_site import edit_site
+from pvsite_datamodel.pydantic_models import PVSiteEditMetadata
 from sqlalchemy.orm import Session
 
 from india_api import internal
@@ -278,6 +280,29 @@ class Client(internal.DatabaseInterface):
                 sites.append(site)
 
             return sites
+
+    def put_site(
+        self, site_uuid: str, site_properties: internal.SiteProperties, email: str
+    ) -> list[internal.Site]:
+        """update site information for a single site."""
+
+        # get sites uuids from user
+        with self._get_session() as session:
+            user = get_user_by_email(session, email)
+            site = get_site_by_uuid(session, site_uuid)
+            check_user_has_access_to_site(session, email, site.site_uuid)
+
+            site_info = PVSiteEditMetadata(**site_properties.model_dump())
+            print(site_info)
+
+            site, _ = edit_site(
+                session=session,
+                site_uuid=site_uuid,
+                site_info=site_info,
+                user_uuid=user.user_uuid,
+            )
+
+            return site
 
     def get_site_forecast(self, site_uuid: str, email: str) -> list[internal.PredictedPower]:
         """Get a forecast for a site, this is for a solar site"""

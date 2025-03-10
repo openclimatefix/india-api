@@ -150,6 +150,11 @@ class Client(internal.DatabaseInterface):
 
         return [site]
 
+    def put_site(
+            self, site_uuid: str, site_properties: internal.SiteProperties, email: str
+    ) -> list[internal.Site]:
+        pass
+
     def get_site_forecast(
         self, site_uuid: str, email: Optional[str] = None
     ) -> list[internal.PredictedPower]:

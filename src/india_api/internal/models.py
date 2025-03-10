@@ -52,8 +52,38 @@ class ActualPower(BaseModel):
         )
 
 
-class Site(BaseModel):
+class SiteProperties(BaseModel):
     """Site metadata"""
+
+    client_site_name: Optional[str] = Field(
+        None,
+        json_schema_extra={"description": "The name of the site as given by the providing user."},
+    )
+    orientation: Optional[float] = Field(
+        None,
+        json_schema_extra={
+            "description": "The rotation of the panel in degrees. 180° points south"
+        },
+    )
+    tilt: Optional[float] = Field(
+        None,
+        json_schema_extra={
+            "description": "The tile of the panel in degrees. 90° indicates the panel is vertical."
+        },
+    )
+    latitude: Optional[float] = Field(
+        None, json_schema_extra={"description": "The site's latitude"}, ge=-90, le=90
+    )
+    longitude: Optional[float] = Field(
+        None, json_schema_extra={"description": "The site's longitude"}, ge=-180, le=180
+    )
+    capacity_kw: Optional[float] = Field(
+        None, json_schema_extra={"description": "The site's total capacity in kw"}, ge=0
+    )
+
+
+class Site(BaseModel):
+    """Site metadata with site_uuid"""
 
     site_uuid: str = Field(..., json_schema_extra={"description": "The site uuid assigned by ocf."})
     client_site_name: Optional[str] = Field(
@@ -136,6 +166,11 @@ class DatabaseInterface(abc.ABC):
     @abc.abstractmethod
     def get_sites(self, email: str) -> list[Site]:
         """Get a list of sites"""
+        pass
+
+    @abc.abstractmethod
+    def put_site(self, site_uuid: str, site_properties: SiteProperties, email:str) -> list[Site]:
+        """Update site info"""
         pass
 
     @abc.abstractmethod

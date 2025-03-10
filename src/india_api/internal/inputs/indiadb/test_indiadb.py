@@ -2,7 +2,7 @@ import logging
 from fastapi import HTTPException
 import pytest
 
-from india_api.internal import PredictedPower, ActualPower
+from india_api.internal import PredictedPower, ActualPower, SiteProperties
 
 from pvsite_datamodel.sqlmodels import APIRequestSQL
 
@@ -83,6 +83,16 @@ class TestIndiaDBClient:
     def test_get_sites_no_sites(self, client, sites) -> None:
         sites_from_api = client.get_sites(email="test2@test.com")
         assert len(sites_from_api) == 0
+
+    def test_get_put_site(self, client, sites) -> None:
+        sites_from_api = client.get_sites(email="test@test.com")
+        assert sites_from_api[0].client_site_name == "ruvnl_pv_testID1"
+        site = client.put_site(
+            site_uuid=sites[0].site_uuid,
+            site_properties=SiteProperties(client_site_name="test_zzz"),
+            email="test@test.com",
+        )
+        assert site.client_site_name == "test_zzz"
 
     def test_get_site_forecast(self, client, sites, forecast_values_site) -> None:
         out = client.get_site_forecast(site_uuid=str(sites[0].site_uuid), email="test@test.com")
