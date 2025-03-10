@@ -283,7 +283,7 @@ class Client(internal.DatabaseInterface):
 
     def put_site(
         self, site_uuid: str, site_properties: internal.SiteProperties, email: str
-    ) -> list[internal.Site]:
+    ) -> internal.Site:
         """update site information for a single site."""
 
         # get sites uuids from user
@@ -292,8 +292,9 @@ class Client(internal.DatabaseInterface):
             site = get_site_by_uuid(session, site_uuid)
             check_user_has_access_to_site(session, email, site.site_uuid)
 
-            site_info = PVSiteEditMetadata(**site_properties.model_dump())
-            print(site_info)
+            site_info = PVSiteEditMetadata(
+                **site_properties.model_dump(exclude_unset=True, exclude_none=False)
+            )
 
             site, _ = edit_site(
                 session=session,

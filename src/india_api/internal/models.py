@@ -169,7 +169,7 @@ class DatabaseInterface(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def put_site(self, site_uuid: str, site_properties: SiteProperties, email:str) -> list[Site]:
+    def put_site(self, site_uuid: str, site_properties: SiteProperties, email:str) -> Site:
         """Update site info"""
         pass
 

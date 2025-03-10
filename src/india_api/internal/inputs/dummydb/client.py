@@ -152,7 +152,7 @@ class Client(internal.DatabaseInterface):
 
     def put_site(
             self, site_uuid: str, site_properties: internal.SiteProperties, email: str
-    ) -> list[internal.Site]:
+    ) -> internal.Site:
         pass
 
     def get_site_forecast(

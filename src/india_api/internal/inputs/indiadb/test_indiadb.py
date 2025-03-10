@@ -93,6 +93,7 @@ class TestIndiaDBClient:
             email="test@test.com",
         )
         assert site.client_site_name == "test_zzz"
+        assert site.latitude is not None
 
     def test_get_site_forecast(self, client, sites, forecast_values_site) -> None:
         out = client.get_site_forecast(site_uuid=str(sites[0].site_uuid), email="test@test.com")
@@ -125,5 +126,5 @@ class TestIndiaDBClient:
                 email="test@test.com",
             )
         except HTTPException as e:
-            assert e.status_code == 422 
+            assert e.status_code == 422
             assert "generation values" in str(e.detail)
