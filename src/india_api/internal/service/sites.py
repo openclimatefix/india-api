@@ -2,7 +2,7 @@ from starlette import status
 
 from fastapi import APIRouter, Depends
 
-from india_api.internal import ActualPower, PredictedPower, Site
+from india_api.internal import ActualPower, PredictedPower, Site, SiteProperties
 from india_api.internal.service.database_client import DBClientDependency
 from india_api.internal.service.auth import auth
 
@@ -25,6 +25,30 @@ def get_sites(db: DBClientDependency, auth: dict = Depends(auth)) -> list[Site]:
 
     return sites
 
+
+@router.put("/sites/{site_uuid}", response_model=SiteProperties, status_code=status.HTTP_200_OK)
+def put_site_info(
+    site_uuid: str,
+    site_info: SiteProperties,
+    db: DBClientDependency,
+    auth: dict = Depends(auth),
+) -> SiteProperties:
+    """
+    ### This route allows a user to update site information for a single site.
+
+    #### Parameters
+    - **site_uuid**: The site uuid, for example '8d39a579-8bed-490e-800e-1395a8eb6535'
+    - **site_info**: The site informations to update.
+        You can update one or more fields at a time. For example :
+        {"orientation": 170, "tilt": 35, "capacity_kw": 5}
+    """
+
+    # get email from auth
+    email = auth["https://openclimatefix.org/email"]
+
+    site = db.put_site(site_uuid=site_uuid, site_properties=site_info, email=email)
+
+    return site
 
 @router.get(
     "/sites/{site_uuid}/forecast",
