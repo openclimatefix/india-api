@@ -3,14 +3,17 @@
 import logging
 import os
 import sys
+import datetime as dt
 
-from fastapi import FastAPI, status, Request
+from fastapi import FastAPI, status, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from india_api.internal.service.database_client import get_db_client
 from india_api.internal.service.regions import router as regions_router
 from india_api.internal.service.sites import router as sites_router
+from india_api.internal.service.utils import validate_forecast_timing
+from india_api.internal.service.constants import local_tz, get_forecast_timing_message
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
@@ -38,7 +41,7 @@ tags_metadata = [
 ]
 
 title = "India API"
-description = """ API providing OCF Forecast for India.
+description = f""" API providing OCF Forecast for India.
 
 ## Regions
 
@@ -49,25 +52,26 @@ The regions routes are used to get solar and wind forecasts.
 The sites routes are used to get site level forecasts. 
 A user can
 - **/sites**: Get information about your sites
-- **/sites/{site_uuid}/forecast**: Get a forecast for a specific site
-- **/sites/{site_uuid}/forecast**: Get and post generation for a specific site
+- **/sites/{{site_uuid}}/forecast**: Get a forecast for a specific site
+- **/sites/{{site_uuid}}/forecast**: Get and post generation for a specific site
+
+## Forecast Timing
+
+{get_forecast_timing_message()}
 
 ### Authentication and Example
 If you need an authentication route, please get your access token with the following code. 
 You'll need a username and password. 
-```
-export AUTH=$(curl --request POST 
-   --url https://nowcasting-pro.eu.auth0.com/oauth/token 
-   --header 'content-type: application/json' 
-   --data '{"client_id":"TODO", "audience":"https://api.nowcasting.io/", "grant_type":"password", "username":"username", "password":"password"}'
+export AUTH=$(curl --request POST
+--url https://nowcasting-pro.eu.auth0.com/oauth/token
+--header 'content-type: application/json'
+--data '{{"client_id":"TODO", "audience":"https://api.nowcasting.io/", "grant_type":"password", "username":"username", "password":"password"}}'
 )
 
-export TOKEN=$(echo "${AUTH}" | jq '.access_token' | tr -d '"')
-```
-You can then use
-```
+export TOKEN=$(echo "${{AUTH}}" | jq '.access_token' | tr -d '"')
+
 curl -X GET 'https://api.quartz.energy/sites' -H "Authorization: Bearer $TOKEN"
-```
+
 
 """
 
@@ -85,6 +89,28 @@ server.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def validate_forecast_request(forecast_date: dt.datetime):
+    """
+    Validates a forecast request according to the day-ahead rule.
+    
+    Args:
+        forecast_date: The date for which forecast is requested
+        
+    Raises:
+        HTTPException: If the forecast request is invalid
+    """
+    if not validate_forecast_timing(forecast_date):
+        from india_api.internal.service.constants import FORECAST_CUTOFF_HOUR
+        cutoff_day = forecast_date.astimezone(local_tz) - dt.timedelta(days=1)
+        cutoff_time = cutoff_day.replace(hour=FORECAST_CUTOFF_HOUR, minute=0, second=0, microsecond=0)
+        
+        raise HTTPException(
+            status_code=400,
+            detail=f"Forecast for {forecast_date.isoformat()} cannot be generated yet. "
+                  f"Please wait until after {cutoff_time.isoformat()} IST."
+        )
 
 
 @server.middleware("http")

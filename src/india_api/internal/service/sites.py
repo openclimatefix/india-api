@@ -1,10 +1,12 @@
 from starlette import status
+import datetime as dt
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from india_api.internal import ActualPower, PredictedPower, Site
 from india_api.internal.service.database_client import DBClientDependency
 from india_api.internal.service.auth import auth
+from india_api.internal.service.server import validate_forecast_request
 
 router = APIRouter(
     tags=["Sites"],
@@ -31,13 +33,27 @@ def get_sites(db: DBClientDependency, auth: dict = Depends(auth)) -> list[Site]:
     status_code=status.HTTP_200_OK,
 )
 def get_forecast(
-    site_uuid: str, db: DBClientDependency, auth: dict = Depends(auth)
+    site_uuid: str, 
+    db: DBClientDependency, 
+    auth: dict = Depends(auth),
+    start_datetime: dt.datetime = Query(None, description="Start date and time for forecast in UTC"),
+    end_datetime: dt.datetime = Query(None, description="End date and time for forecast in UTC")
 ) -> list[PredictedPower]:
-    """Get forecast of a site"""
+    """
+    Get forecast of a site.
+    
+    Forecasts follow the day-ahead rule:
+    - Forecasts for a given date are generated before 9:00 IST on the day before
+    - For example: Forecast for 2024-06-03 12:00 (IST) would be made before 2024-06-02 09:00 IST
+    """
+    # Validate forecast timing if start_datetime is provided
+    if start_datetime:
+        validate_forecast_request(start_datetime)
 
     # get email from auth
     email = auth["https://openclimatefix.org/email"]
 
+    # Get forecast data
     forecast = db.get_site_forecast(site_uuid=site_uuid, email=email)
 
     return forecast
