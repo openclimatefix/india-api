@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 
 import pandas as pd
 from fastapi import APIRouter
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from starlette import status
@@ -16,6 +16,7 @@ from india_api.internal.service.constants import local_tz
 from india_api.internal.service.csv import format_csv_and_created_time
 from india_api.internal.service.database_client import DBClientDependency
 from india_api.internal.service.resample import resample_generation
+from india_api.internal.service.server import validate_forecast_request
 
 router = APIRouter(
     tags=["Regions"],
@@ -140,6 +141,8 @@ def get_forecast_timeseries_route(
     forecast_horizon: ForecastHorizon = ForecastHorizon.day_ahead,
     forecast_horizon_minutes: Optional[int] = None,
     smooth_flag: bool = True,
+    start_datetime: dt.datetime = Query(None, description="Start date and time for forecast in UTC"),
+    end_datetime: dt.datetime = Query(None, description="End date and time for forecast in UTC")
 ) -> GetForecastGenerationResponse:
     """Function for the forecast generation route.
 
@@ -149,11 +152,23 @@ def get_forecast_timeseries_route(
         forecast_horizon: The time horizon to get the data for. Can be 'latest', 'horizon' or 'day ahead'
         forecast_horizon_minutes: The number of minutes to get the forecast for. forecast_horizon must be 'horizon'
         smooth_flag: If the forecast should be smoothed or not. Note for DA forecast this is always False.
+        start_datetime: Start date and time for forecast in UTC.
+        end_datetime: End date and time for forecast in UTC.
+        
+    Note:
+        Forecasts follow the day-ahead rule:
+        - Forecasts for a given date are generated before 9:00 IST on the day before
+        - For example: Forecast for 2024-06-03 12:00 (IST) would be made before 2024-06-02 09:00 IST
     """
-    values: list[PredictedPower] = []
-
+    # Validate forecast timing if start_datetime is provided
+    if start_datetime:
+        validate_forecast_request(start_datetime)
+    
+    # If day-ahead forecast, ensure smooth_flag is False
     if forecast_horizon == ForecastHorizon.day_ahead:
         smooth_flag = False
+
+    values: list[PredictedPower] = []
 
     try:
         if source == "wind":
@@ -194,7 +209,15 @@ def get_forecast_da_csv(
 ):
     """
     Route to get the day ahead forecast as a CSV file.
+    
+    Note:
+        Forecasts follow the day-ahead rule:
+        - Forecasts for a given date are generated before 9:00 IST on the day before
+        - For example: Forecast for 2024-06-03 12:00 (IST) would be made before 2024-06-02 09:00 IST
     """
+    # Day-ahead forecasts need validation - we'll use tomorrow's date as reference
+    tomorrow = dt.datetime.now(dt.UTC) + dt.timedelta(days=1)
+    validate_forecast_request(tomorrow)
 
     forcasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
         source=source,
