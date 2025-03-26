@@ -8,6 +8,7 @@ from fastapi import FastAPI, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
 
 from india_api.internal.service.database_client import get_db_client
 from india_api.internal.service.regions import router as regions_router
@@ -17,6 +18,7 @@ from india_api.cmd.redoc_theme import get_redoc_html_with_theme
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
+folder = os.path.dirname(os.path.abspath(__file__))
 version = "0.1.53"
 
 
@@ -141,11 +143,16 @@ def get_health_route() -> GetHealthResponse:
     return GetHealthResponse(status=status.HTTP_200_OK)
 
 
+@server.get("/QUARTZSOLAR_LOGO_SECONDARY_BLACK_1.png", include_in_schema=False)
+def get_quartz_solar_logo():
+    "Serve the Quartz Solar logo."
+    return FileResponse(f"{folder}/QUARTZSOLAR_LOGO_SECONDARY_BLACK_1.png")
+
 @server.get("/docs", include_in_schema=False)
 def redoc_html():
     """Render ReDoc with custom theme options included."""
     return get_redoc_html_with_theme(
-        title="Quartz Solar API",
+        title=title,
     )
 
 def custom_openapi():
@@ -158,7 +165,7 @@ def custom_openapi():
         description=description,
         contact={
             "name": "India API by Open Climate Fix",
-            "url": "https://quartz.energy",
+            "url": "https://www.quartz.solar",
             "email": "info@openclimatefix.org",
         },
         license_info={
