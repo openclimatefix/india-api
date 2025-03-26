@@ -6,11 +6,14 @@ import sys
 
 from fastapi import FastAPI, status, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 
 from india_api.internal.service.database_client import get_db_client
 from india_api.internal.service.regions import router as regions_router
 from india_api.internal.service.sites import router as sites_router
+from india_api.cmd.redoc_theme import get_redoc_html_with_theme
+
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
 log = logging.getLogger(__name__)
@@ -76,6 +79,8 @@ server = FastAPI(
     title=title,
     description=description,
     openapi_tags=tags_metadata,
+    docs_url=None,
+    redoc_url=None,
 )
 origins = os.getenv("ORIGINS", "*").split(",")
 server.add_middleware(
@@ -134,3 +139,36 @@ class GetHealthResponse(BaseModel):
 def get_health_route() -> GetHealthResponse:
     """Health endpoint for the API."""
     return GetHealthResponse(status=status.HTTP_200_OK)
+
+
+@server.get("/docs", include_in_schema=False)
+def redoc_html():
+    """Render ReDoc with custom theme options included."""
+    return get_redoc_html_with_theme(
+        title="Quartz Solar API",
+    )
+
+def custom_openapi():
+    """Customize the OpenAPI schema for ReDoc."""
+    if server.openapi_schema:
+        return server.openapi_schema
+    openapi_schema = get_openapi(
+        title=title,
+        version=version,
+        description=description,
+        contact={
+            "name": "India API by Open Climate Fix",
+            "url": "https://quartz.energy",
+            "email": "info@openclimatefix.org",
+        },
+        license_info={
+            "name": "MIT License",
+            "url": "https://github.com/openclimatefix/india-api/blob/main/LICENSE",
+        },
+        routes=server.routes,
+    )
+    openapi_schema["info"]["x-logo"] = {"url": "/QUARTZSOLAR_LOGO_SECONDARY_BLACK_1.png"}
+    server.openapi_schema = openapi_schema
+    return openapi_schema
+
+server.openapi = custom_openapi
