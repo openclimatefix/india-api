@@ -192,23 +192,20 @@ def get_forecast_csv(
     db: DBClientDependency,
     auth: dict = Depends(auth),
     forecast_horizon: Optional[ForecastHorizon] = ForecastHorizon.latest,
-    forecast_horizon_minutes: Optional[int] = 0,
 ):
     """
     Route to get the day ahead forecast as a CSV file.
     By default, the CSV file will be for the latest forecast, from now forwards.
-    The forecast_horizon can be set to 'latest', 'day_ahead' or 'horizon'.
+    The forecast_horizon can be set to 'latest' or 'day_ahead'.
     - latest: The latest forecast, from now forwards.
-    - day_ahead: The forecast for the next day, from midnight.
-    - horizon: The forecast for the next horizon_horizon_minutes minutes, from default forecast history start.
-    The forecast_horizon_minutes is only used if the forecast_horizon is set to 'horizon'.
+    - day_ahead: The forecast for the next day, from 00:00.
     """
 
     if forecast_horizon is not None:
-        if forecast_horizon not in [ForecastHorizon.latest, ForecastHorizon.day_ahead, ForecastHorizon.horizon]:
+        if forecast_horizon not in [ForecastHorizon.latest, ForecastHorizon.day_ahead]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid forecast_horizon {forecast_horizon}. Must be 'latest', 'day_ahead', or 'horizon.",
+                detail=f"Invalid forecast_horizon {forecast_horizon}. Must be 'latest' or 'day_ahead'.",
             )
 
     forecasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
@@ -217,7 +214,6 @@ def get_forecast_csv(
         db=db,
         auth=auth,
         forecast_horizon=forecast_horizon,
-        forecast_horizon_minutes=forecast_horizon_minutes,
         smooth_flag=False,
     )
 
@@ -232,11 +228,11 @@ def get_forecast_csv(
             forecast_type = "intraday"
         case ForecastHorizon.day_ahead:
             forecast_type = "da"
-        case ForecastHorizon.horizon:
-            forecast_type = f"horizon_{forecast_horizon_minutes}"
         case _:
-            # this shouldn't happen but will handle if class is changed
-            forecast_type = "default"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid forecast_horizon {forecast_horizon}. Must be 'latest' or 'day_ahead'.",
+            )
     csv_file_path = f"{region}_{source}_{forecast_type}_{tomorrow_ist}.csv"
 
     description = (
