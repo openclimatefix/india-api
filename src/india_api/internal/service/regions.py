@@ -186,35 +186,61 @@ def get_forecast_timeseries_route(
     response_class=FileResponse,
     include_in_schema=False,
 )
-def get_forecast_da_csv(
+def get_forecast_csv(
     source: ValidSourceDependency,
     region: str,
     db: DBClientDependency,
     auth: dict = Depends(auth),
+    forecast_horizon: Optional[ForecastHorizon] = ForecastHorizon.latest,
+    forecast_horizon_minutes: Optional[int] = 0,
 ):
     """
     Route to get the day ahead forecast as a CSV file.
+    By default, the CSV file will be for the latest forecast, from now forwards.
+    The forecast_horizon can be set to 'latest', 'day_ahead' or 'horizon'.
+    - latest: The latest forecast, from now forwards.
+    - day_ahead: The forecast for the next day, from midnight.
+    - horizon: The forecast for the next horizon_horizon_minutes minutes, from default forecast history start.
+    The forecast_horizon_minutes is only used if the forecast_horizon is set to 'horizon'.
     """
 
-    forcasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
+    if forecast_horizon is not None:
+        if forecast_horizon not in [ForecastHorizon.latest, ForecastHorizon.day_ahead, ForecastHorizon.horizon]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid forecast_horizon {forecast_horizon}. Must be 'latest', 'day_ahead', or 'horizon.",
+            )
+
+    forecasts: GetForecastGenerationResponse = get_forecast_timeseries_route(
         source=source,
         region=region,
         db=db,
         auth=auth,
-        forecast_horizon=ForecastHorizon.day_ahead,
+        forecast_horizon=forecast_horizon,
+        forecast_horizon_minutes=forecast_horizon_minutes,
         smooth_flag=False,
     )
 
     # format to dataframe
-    df, created_time = format_csv_and_created_time(forcasts.values)
+    df, created_time = format_csv_and_created_time(forecasts.values, forecast_horizon=forecast_horizon)
 
     # make file format
     now_ist = pd.Timestamp.now(tz="Asia/Kolkata")
     tomorrow_ist = df["Date [IST]"].iloc[0]
-    csv_file_path = f"{region}_{source}_da_{tomorrow_ist}.csv"
+    match forecast_horizon:
+        case ForecastHorizon.latest:
+            forecast_type = "intraday"
+        case ForecastHorizon.day_ahead:
+            forecast_type = "da"
+        case ForecastHorizon.horizon:
+            forecast_type = f"horizon_{forecast_horizon_minutes}"
+        case _:
+            # this shouldn't happen but will handle if class is changed
+            forecast_type = "default"
+    csv_file_path = f"{region}_{source}_{forecast_type}_{tomorrow_ist}.csv"
 
     description = (
-        f"Forecast for {region} for {source} for {tomorrow_ist}. "
+        f"Forecast for {region} for {source}, {forecast_type}, for {tomorrow_ist}. "
         f"The Forecast was created at {created_time} and downloaded at {now_ist}"
     )
 
