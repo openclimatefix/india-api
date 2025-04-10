@@ -81,7 +81,7 @@ server = FastAPI(
     title=title,
     description=description,
     openapi_tags=tags_metadata,
-    docs_url=None,
+    docs_url="/swagger",
     redoc_url=None,
 )
 origins = os.getenv("ORIGINS", "*").split(",")
