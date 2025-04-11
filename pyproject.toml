@@ -29,9 +29,6 @@ dependencies = [
     "sentry-sdk == 2.1.1",
 ]
 
-include = [
-    { path = "src/india_api/internal/service/*.png" },
-]
 
 [project.optional-dependencies]
 test = [
@@ -60,7 +57,7 @@ repository = "https://github.com/openclimatefix/india-api"
 india-api = "india_api.cmd.main:run"
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
 
 [tool.setuptools-git-versioning]
 enabled = true
