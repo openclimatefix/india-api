@@ -25,7 +25,7 @@ $ docker run ghcr.io/openclimatefix/india-api:latest
 Or build and run locally using the Containerfile:
 
 ```sh
-$ docker build -t india-api .
+$ docker build -t india-api -f Containerfile .
 $ docker run india-api
 ```
 
