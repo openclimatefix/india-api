@@ -58,6 +58,10 @@ india-api = "india_api.cmd.main:run"
 
 [tool.setuptools]
 include-package-data = true
+py-modules = ['india_api']
+
+[tool.setuptools.package-data]
+india_api = ['india-api/internal/service/*.png']
 
 [tool.setuptools-git-versioning]
 enabled = true
