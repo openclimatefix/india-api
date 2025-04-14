@@ -26,8 +26,7 @@ def client(engine, db_session):
 
     return client
 
-# Skip for now
-@pytest.mark.skip(reason="Not finished yet")
+# TODO do we need to use freeze time? as not sure what happens on on the quarter hour
 class TestCsvExport:
     def test_format_csv_and_created_time(self, client, forecast_values_wind) -> None:
         """Test the format_csv_and_created_time function."""
@@ -54,8 +53,9 @@ class TestCsvExport:
         assert result[0].shape[1] == 3
         # Check the first row of the DataFrame
         # The date of the first row should be the nearest rounded 15min from now
-        rounded_15_min = pd.Timestamp.now(tz="Asia/Kolkata").round("15min")
-        assert result[0].iloc[0]["Time"] == rounded_15_min.strftime("%H:%M")
+        rounded_15_min = pd.Timestamp.now(tz="Asia/Kolkata").ceil("15min")
+
+        assert result[0].iloc[0]["Time"] == rounded_15_min.strftime("%H:%M") + ' - ' + (rounded_15_min + pd.Timedelta('15min')).strftime("%H:%M")
         # Check the number of rows in the DataFrame
         # For the latest forecast, it should be the number of
         # forecast values after now
@@ -66,6 +66,12 @@ class TestCsvExport:
         # Check the column names
         assert list(result[0].columns) == ["Date [IST]", "Time", "PowerMW"]
         # Check the data types of the columns
-        assert result[0]["Date [IST]"].dtype == "datetime64[ns, Asia/Kolkata]"
+        today = pd.Timestamp.now(tz="Asia/Kolkata").date()
+        assert result[0].iloc[0]["Date [IST]"] == today
         assert result[0]["Time"].dtype == "object"
         assert result[0]["PowerMW"].dtype == "float64"
+
+
+        # TODO add DA test
+
+        # TODO add csv download test

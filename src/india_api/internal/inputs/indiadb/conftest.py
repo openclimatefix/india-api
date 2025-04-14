@@ -147,7 +147,14 @@ def make_fake_forecast_values(db_session, sites, model_name):
     num_forecasts = 10
     num_values_per_forecast = 11
 
-    timestamps = [datetime.utcnow() - timedelta(minutes=10 * i) for i in range(num_forecasts)]
+    now = datetime.utcnow()
+    rounded_now_30_mins = now.replace(microsecond=0,second=0)
+    if now.minute >= 30:
+        rounded_now_30_mins = rounded_now_30_mins.replace(minute=30)
+    else:
+        rounded_now_30_mins = rounded_now_30_mins.replace(minute=0)
+
+    timestamps = [rounded_now_30_mins - timedelta(minutes=15 * i) for i in range(num_forecasts)]
 
     # To make things trickier we make a second forecast at the same for one of the timestamps.
     timestamps = timestamps + timestamps[-1:]
