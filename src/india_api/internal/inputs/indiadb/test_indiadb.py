@@ -28,8 +28,9 @@ class TestIndiaDBClient:
     ) -> None:
         locID = "testID"
         result = client.get_predicted_wind_power_production_for_location(locID)
+        print(result)
 
-        assert len(result) == 110
+        assert len(result) == 19  # 8 backwards, 10 forwards, 1 now
         for record in result:
             assert isinstance(record, PredictedPower)
 
@@ -46,7 +47,7 @@ class TestIndiaDBClient:
         locID = "testID"
         result = client.get_predicted_solar_power_production_for_location(locID)
 
-        assert len(result) == 110
+        assert len(result) == 19  # 8 backwards, 10 forwards, 1 now
         for record in result:
             assert isinstance(record, PredictedPower)
 

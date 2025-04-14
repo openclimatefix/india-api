@@ -71,6 +71,8 @@ class TestCsvExport:
         assert result[0]["Time"].dtype == "object"
         assert result[0]["PowerMW"].dtype == "float64"
 
+        assert len(result[0]) == 10  # only future, 2.5 hours from now
+
 
         # TODO add DA test
 

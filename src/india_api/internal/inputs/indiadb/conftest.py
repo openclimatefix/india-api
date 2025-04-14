@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 
+import pandas as pd
 import pytest
 from pvsite_datamodel.sqlmodels import Base, ForecastSQL, ForecastValueSQL, GenerationSQL, SiteSQL
 from pvsite_datamodel.read.user import get_user_by_email
@@ -144,17 +145,12 @@ def make_fake_forecast_values(db_session, sites, model_name):
     forecast_values = []
     forecast_version: str = "0.0.0"
 
-    num_forecasts = 10
-    num_values_per_forecast = 11
+    num_forecasts = 12  # 2 hours in 10 minute blocks
+    num_values_per_forecast = 11  # 2.5 hours in 15 minute blocks, including init time
+    # Total forecast range should be 4.5 hours, which is 18 values
 
-    now = datetime.utcnow()
-    rounded_now_30_mins = now.replace(microsecond=0,second=0)
-    if now.minute >= 30:
-        rounded_now_30_mins = rounded_now_30_mins.replace(minute=30)
-    else:
-        rounded_now_30_mins = rounded_now_30_mins.replace(minute=0)
-
-    timestamps = [rounded_now_30_mins - timedelta(minutes=15 * i) for i in range(num_forecasts)]
+    init_time = datetime.utcnow() - timedelta(hours=2)
+    timestamps = [init_time + timedelta(minutes=10 * i) for i in range(num_forecasts)]
 
     # To make things trickier we make a second forecast at the same for one of the timestamps.
     timestamps = timestamps + timestamps[-1:]
@@ -167,6 +163,9 @@ def make_fake_forecast_values(db_session, sites, model_name):
             forecast: ForecastSQL = ForecastSQL(
                 site_uuid=site.site_uuid, forecast_version=forecast_version, timestamp_utc=timestamp
             )
+
+            timestamp = pd.Timestamp(timestamp)
+            timestamp = timestamp.floor('15min')
 
             db_session.add(forecast)
             db_session.commit()
