@@ -183,10 +183,19 @@ async def get_forecast(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
+    # Window is aligned to UTC day boundaries (not the current hour), matching the
+    # windowing behaviour of the legacy (v0.2.4) India API this replaces.
+    now_utc = dt.datetime.now(tz=dt.UTC)
+    window_start = (now_utc - dt.timedelta(days=2)).replace(
+        hour=0, minute=0, second=0, microsecond=0,
+    )
+    window_end = (now_utc + dt.timedelta(days=2)).replace(
+        hour=0, minute=0, second=0, microsecond=0,
+    )
     pgvs = await db.get_predicted_generation(
         location_uuid=site_uuid,
-        window_start=pd.Timestamp.now(tz=tz).floor("H").to_pydatetime() - dt.timedelta(days=2),
-        window_end=pd.Timestamp.now(tz=tz).floor("H").to_pydatetime() + dt.timedelta(days=2),
+        window_start=window_start,
+        window_end=window_end,
         energy_type=site.energy_type or models.EnergyType.SOLAR,
         location_type=models.LocationType.SITE,
         authdata=auth,
