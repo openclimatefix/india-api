@@ -74,8 +74,10 @@ def _find_missing_timestamps(
         return []
 
     expected = min(existing_timestamps)
+    #this end helps checking for stale data, with 30min buffer
+    end = max(max(existing_timestamps), dt.datetime.now(dt.UTC) - dt.timedelta(minutes=30))
     missing = []
-    while expected <= max(existing_timestamps):
+    while expected <= end:
         if expected not in existing_timestamps:
             missing.append(expected)
         expected += interval
