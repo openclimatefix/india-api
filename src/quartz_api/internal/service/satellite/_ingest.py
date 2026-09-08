@@ -46,6 +46,42 @@ LAYER_CONFIG = {
 _ingest_running: bool = False
 
 
+def _find_missing_timestamps(
+    keys: list[str],
+    backfill_hours: int,
+    interval: dt.timedelta = dt.timedelta(minutes=15),
+) -> list[dt.datetime]:
+    """Return interval-aligned timestamps missing within the last backfill_hours.
+
+    keys are S3 object keys, e.g. "layers/IR_016/20260907_104500.tif" - only their
+    parsed timestamps are used. Timestamps older than backfill_hours, or not aligned
+    to interval, are ignored - e.g. a channel's extra 5-minute stamps are a bonus,
+    not a gap in the 15-minute data.
+    """
+    cutoff = dt.datetime.now(dt.UTC) - dt.timedelta(hours=backfill_hours)
+    interval_minutes = int(interval.total_seconds() // 60)
+
+    existing_timestamps = set()
+    for k in keys:
+        if k.endswith(".tif"):
+            ts = dt.datetime.strptime(
+                k.split("/")[-1].removesuffix(".tif"), "%Y%m%d_%H%M%S",
+            ).replace(tzinfo=dt.UTC)
+            if ts >= cutoff and ts.minute % interval_minutes == 0 and ts.second == 0:
+                existing_timestamps.add(ts)
+
+    if not existing_timestamps:
+        return []
+
+    expected = min(existing_timestamps)
+    missing = []
+    while expected <= max(existing_timestamps):
+        if expected not in existing_timestamps:
+            missing.append(expected)
+        expected += interval
+    return missing
+
+
 def run_ingest(sat_type: str = "rss") -> tuple[str, str]:
     """Run ingest of latest satellite data for all channels.
 
@@ -69,7 +105,7 @@ def run_ingest(sat_type: str = "rss") -> tuple[str, str]:
         _ingest_running = False
 
 
-def _run_ingest(sat_type: str) -> tuple[str, str]:
+def _run_ingest(sat_type: str, check_gaps: bool = True) -> tuple[str, str]:
     log.info("Ingest started for sat_type=%s", sat_type)
 
     s3_bucket = get_geotiff_bucket()
@@ -217,6 +253,52 @@ def _run_ingest(sat_type: str) -> tuple[str, str]:
                 log.exception("Failed %s @ %s: %s", channel, ts_str, e)
                 sentry_sdk.capture_exception(e)
 
+    #check for any missing timestamps in the last 48 hours
+    if check_gaps:
+        other_sat_type = "0deg" if sat_type == "rss" else "rss"
+        fallback_ran = False
+        still_missing: list[tuple[str, dt.datetime]] = []
+
+        for channel in channels:
+            prefix = f"layers/{channel}/"
+            try:
+                keys = s3_client.list_keys(s3_bucket, prefix)
+                missing = _find_missing_timestamps(keys, BACKFILL_HOURS)
+
+                if missing:
+                    if not fallback_ran:
+                        fallback_ran = True
+                        log.warning(
+                            "Gap detected in %s, retrying ingest with sat_type=%s",
+                            channel, other_sat_type,
+                        )
+                        _run_ingest(other_sat_type, check_gaps=False)
+
+                    # re-check after the fallback run
+                    keys = s3_client.list_keys(s3_bucket, prefix)
+
+                    for missing_ts in _find_missing_timestamps(keys, BACKFILL_HOURS):
+                        log.error(
+                            "Missing tile for %s at %s after fallback ingest with sat_type=%s",
+                            channel, missing_ts, other_sat_type,
+                        )
+                        still_missing.append((channel, missing_ts))
+            except Exception as e:
+                log.exception("Gap check failed for %s: %s", channel, e)
+                sentry_sdk.capture_exception(e)
+
+        if still_missing:
+            sentry_sdk.capture_message(
+                "Missing satellite tiles after fallback ingest",
+                level="error",
+                fingerprint=["missing-satellite-tiles"],
+                tags={"sat_type": sat_type, "fallback_sat_type": other_sat_type},
+                extras={
+                    "missing_tiles": [
+                        f"{ch}@{ts:%Y%m%d_%H%M%S}" for ch, ts in still_missing
+                    ],
+                },
+            )
 
     latest_t = all_times[-1]
     latest_ts = str(latest_t)[:19].replace("-", "").replace("T", "_").replace(":", "")

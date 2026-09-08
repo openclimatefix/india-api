@@ -92,6 +92,13 @@ class S3Client:
         with self.fs.open(f"s3://{bucket}/{key}", "wb") as f:
             f.write(data)
 
+    def list_keys(self, bucket: str, prefix: str) -> list[str]:
+        """List all object keys under a prefix, or [] if the prefix doesn't exist."""
+        try:
+            return self.fs.ls(f"s3://{bucket}/{prefix}", detail=False)
+        except FileNotFoundError:
+            return []
+
 
 def get_s3_client() -> S3Client:
     """Get the cached S3 client singleton."""
