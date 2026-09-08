@@ -59,22 +59,22 @@ def _find_missing_timestamps(
     cutoff = dt.datetime.now(dt.UTC) - dt.timedelta(hours=backfill_hours)
     interval_minutes = int(interval.total_seconds() // 60)
 
-    present = set()
+    existing_timestamps = set()
     for k in keys:
         if k.endswith(".tif"):
             ts = dt.datetime.strptime(
                 k.split("/")[-1].removesuffix(".tif"), "%Y%m%d_%H%M%S",
             ).replace(tzinfo=dt.UTC)
             if ts >= cutoff and ts.minute % interval_minutes == 0 and ts.second == 0:
-                present.add(ts)
+                existing_timestamps.add(ts)
 
-    if not present:
+    if not existing_timestamps:
         return []
 
-    expected = min(present)
+    expected = min(existing_timestamps)
     missing = []
-    while expected <= max(present):
-        if expected not in present:
+    while expected <= max(existing_timestamps):
+        if expected not in existing_timestamps:
             missing.append(expected)
         expected += interval
     return missing
@@ -258,33 +258,43 @@ def _run_ingest(sat_type: str) -> tuple[str, str]:
 
     for channel in channels:
         prefix = f"layers/{channel}/"
-        keys = s3_client.list_keys(s3_bucket, prefix)
-        missing = _find_missing_timestamps(keys, BACKFILL_HOURS)
-
-        if missing:
-            if not fallback_ran:
-                log.warning(
-                    "Gap detected in %s, retrying ingest with sat_type=%s", channel, other_sat_type,
-                )
-                _run_ingest(other_sat_type)
-                fallback_ran = True
-
-            # re-check after the fallback run
+        try:
             keys = s3_client.list_keys(s3_bucket, prefix)
+            missing = _find_missing_timestamps(keys, BACKFILL_HOURS)
 
-            for missing_ts in _find_missing_timestamps(keys, BACKFILL_HOURS):
-                log.error(
-                    "Missing tile for %s at %s after fallback ingest with sat_type=%s",
-                    channel, missing_ts, other_sat_type,
-                )
-                still_missing.append((channel, missing_ts))
+            if missing:
+                if not fallback_ran:
+                    fallback_ran = True
+                    log.warning(
+                        "Gap detected in %s, retrying ingest with sat_type=%s",
+                        channel, other_sat_type,
+                    )
+                    _run_ingest(other_sat_type)
+
+                # re-check after the fallback run
+                keys = s3_client.list_keys(s3_bucket, prefix)
+
+                for missing_ts in _find_missing_timestamps(keys, BACKFILL_HOURS):
+                    log.error(
+                        "Missing tile for %s at %s after fallback ingest with sat_type=%s",
+                        channel, missing_ts, other_sat_type,
+                    )
+                    still_missing.append((channel, missing_ts))
+        except Exception as e:
+            log.exception("Gap check failed for %s: %s", channel, e)
+            sentry_sdk.capture_exception(e)
 
     if still_missing:
-        details = ", ".join(f"{ch}@{ts:%Y%m%d_%H%M%S}" for ch, ts in still_missing)
         sentry_sdk.capture_message(
-            f"Missing satellite tiles after fallback ingest with sat_type={other_sat_type}: "
-            f"{details}",
+            "Missing satellite tiles after fallback ingest",
             level="error",
+            fingerprint=["missing-satellite-tiles"],
+            tags={"sat_type": sat_type, "fallback_sat_type": other_sat_type},
+            extras={
+                "missing_tiles": [
+                    f"{ch}@{ts:%Y%m%d_%H%M%S}" for ch, ts in still_missing
+                ],
+            },
         )
 
     latest_t = all_times[-1]
