@@ -92,10 +92,12 @@ class S3Client:
         with self.fs.open(f"s3://{bucket}/{key}", "wb") as f:
             f.write(data)
 
-    def download_bytes(self, bucket: str, key: str) -> bytes:
-        """Download raw bytes from an S3 key."""
-        with self.fs.open(f"s3://{bucket}/{key}", "rb") as f:
-            return f.read()
+    def list_keys(self, bucket: str, prefix: str) -> list[str]:
+        """List all object keys under a prefix, or [] if the prefix doesn't exist."""
+        try:
+            return self.fs.ls(f"s3://{bucket}/{prefix}", detail=False)
+        except FileNotFoundError:
+            return []
 
 
 def get_s3_client() -> S3Client:
