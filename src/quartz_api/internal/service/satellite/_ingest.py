@@ -22,36 +22,19 @@ from quartz_api.internal.s3 import (
 )
 
 from ._blackout import apply_buffer, sun_times
+from .config import (
+    BACKFILL_HOURS,
+    BOTTOM,
+    COMPOSITE_CONFIG,
+    LAYER_CONFIG,
+    LEFT,
+    RIGHT,
+    SAT_MAX_ALPHA,
+    SAT_OPACITY,
+    TOP,
+)
 
 log = logging.getLogger(__name__)
-
-# Bounding box to crop to UK
-LEFT, BOTTOM, RIGHT, TOP = -17.05, 46.49, 11.60, 63.31
-# How far back to backfill missing data (in hours)
-BACKFILL_HOURS = 48
-# Per-channel inversion, and whether to black the channel out while the region is dark.
-LAYER_CONFIG = {
-    "VIS006": {"blackout": True},
-    "VIS008": {"blackout": True},
-    "IR_016": {"blackout": True},
-    "IR_039": {},
-    "IR_087": {"invert": True},
-    "IR_097": {"invert": True},
-    "IR_108": {"invert": True},
-    "IR_120": {"invert": True},
-    "IR_134": {"invert": True},
-    "WV_062": {"invert": True},
-    "WV_073": {"invert": True},
-}
-
-COMPOSITE_CONFIG: dict[str, list[str]] = {
-    "COMPOSITE_VISIBLE": ["IR_016", "VIS008", "VIS006"],
-    "COMPOSITE_INFRARED": ["IR_134", "IR_097", "IR_120", "IR_087", "IR_108"],
-    "COMPOSITE_BLUE": ["WV_073", "WV_062"],
-}
-
-SAT_MAX_ALPHA = 180
-SAT_OPACITY = 0.6
 
 
 def flatten_channels(channel_arrays: list[np.ndarray]) -> np.ndarray:
